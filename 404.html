@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <base href="/chandler-woodworking-preview/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chandler Woodworking</title>
+  <meta name="description" content="Furniture made to commission in Santa Cruz, California.">
+  <meta name="theme-color" content="#EDEBE5">
+  <meta name="color-scheme" content="light only">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alata&family=Archivo:wdth,wght@100..125,400..500&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <script>
+    // Hide everything but the logo until the first-load reveal runs (failsafe after 3s).
+    var h = document.documentElement, base = new URL(document.baseURI).pathname.replace(/\/$/, '');
+    var p = location.pathname.slice(base.length).replace(/\/+$/, '');
+    var onWork = p === '' || p.indexOf('/work') === 0;
+    h.setAttribute('data-page', onWork ? 'work' : p === '/studio' ? 'studio' : 'commissions');
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      h.setAttribute('data-reveal', onWork ? 'hero' : 'header');
+      h.classList.add('revealing');
+      setTimeout(function () { document.documentElement.classList.remove('revealing'); }, 3000);
+    }
+  </script>
+  <script>window.CW_NO_API = true;</script>
+  <script>window.CW_REVIEW = true;</script>
+  <link rel="stylesheet" href="review/review.css">
+  <script type="module" src="review/review.js"></script>
+  <script type="module" src="js/site.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="header-mark tap" href="/" data-link aria-label="Chandler Woodworking, home"><span data-mark="header"></span></a>
+    <nav class="nav-desktop" aria-label="Main">
+      <a href="/" data-link data-nav="work">Work</a>
+      <a href="/studio" data-link data-nav="studio">Studio</a>
+      <a href="/commissions" data-link data-nav="commissions">Commissions</a>
+      <span class="nav-ind" aria-hidden="true"></span>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <!-- WORK -->
+    <section class="page" data-page="work" hidden>
+      <div class="hero reg-box">
+        <span class="rx tl"></span><span class="rx tr"></span><span class="rx bl"></span><span class="rx br"></span>
+        <div class="hero-mark" data-mark="hero" data-wt="name"></div>
+        <h1 class="sr-only" data-bind="name"></h1>
+      </div>
+      <ol class="sequence" data-sequence></ol>
+    </section>
+
+    <!-- STUDIO -->
+    <section class="page" data-page="studio" hidden>
+      <div class="wrap studio-lead" data-studio-lead></div>
+      <div class="wrap studio-top">
+        <div class="studio-bio" data-wt="bio">
+          <h1 class="sr-only">Studio</h1>
+          <div class="bio-text" data-rid="bio" data-studio-bio></div>
+        </div>
+        <figure data-studio-photo></figure>
+      </div>
+
+      <div class="wrap process-wrap" data-wt="process">
+        <h2 class="section-title">How a commission works</h2>
+        <ol class="process" data-process></ol>
+      </div>
+
+      <div class="wrap shop-wrap">
+        <h2 class="section-title">Shop</h2>
+        <div class="shop-strip" data-shop></div>
+      </div>
+    </section>
+
+    <!-- COMMISSIONS -->
+    <section class="page" data-page="commissions" hidden>
+      <div class="wrap commission-grid">
+        <div class="form-col">
+          <h1 class="sr-only">Commissions</h1>
+          <form class="inquiry reg-box" data-form data-wt="form" novalidate>
+            <span class="rx tl"></span><span class="rx tr"></span><span class="rx bl"></span><span class="rx br"></span>
+
+            <div class="field">
+              <label class="label" for="f-desc">Your idea</label>
+              <textarea id="f-desc" name="description" rows="8" required></textarea>
+              <p class="err" data-err="description" hidden>Add a few words about the idea.</p>
+            </div>
+
+            <div class="field two">
+              <div>
+                <label class="label" for="f-name">Name</label>
+                <input id="f-name" name="name" autocomplete="name" required>
+                <p class="err" data-err="name" hidden>Add your name.</p>
+              </div>
+              <div>
+                <label class="label" for="f-email">Email</label>
+                <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>
+                <p class="err" data-err="email" hidden>Add a valid email.</p>
+              </div>
+            </div>
+
+            <div class="send-bar">
+              <button class="btn-primary tap" type="submit" data-send>Send</button>
+              <p class="err" data-err="send" hidden></p>
+            </div>
+          </form>
+
+          <div class="confirm" data-confirm hidden tabindex="-1">
+            <h2 class="display-line">Sent.</h2>
+            <p data-confirm-text></p>
+          </div>
+        </div>
+
+        <aside class="next-note">
+          <div class="aside-photo" data-aside-photo></div>
+          <h2 class="label muted">Next</h2>
+          <ol class="next-list">
+            <li><span class="num">1</span><span data-rid="reply-time">Reply within a week</span></li>
+            <li><span class="num">2</span><span>Call or visit</span></li>
+            <li><span class="num">3</span><span>Drawings and quote</span></li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <span class="foot-item"><a class="tap" data-footer-email data-rid="email" data-wt="footer-email"></a></span>
+      <span class="foot-item"><a class="tap" data-footer-ig data-rid="instagram" data-wt="footer-ig" target="_blank" rel="noopener"></a></span>
+      <span class="foot-item"><span data-bind="location" data-rid="location" data-wt="footer-loc"></span></span>
+    </div>
+  </footer>
+
+  <nav class="tabbar" aria-label="Main">
+    <a href="/" data-link data-nav="work" class="tap">Work</a>
+    <a href="/studio" data-link data-nav="studio" class="tap">Studio</a>
+    <a href="/commissions" data-link data-nav="commissions" class="tap">Commissions</a>
+  </nav>
+
+  <div class="piece-layer" data-piece-layer hidden></div>
+</body>
+</html>
