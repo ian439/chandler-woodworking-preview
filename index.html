@@ -80,32 +80,32 @@
     <!-- COMMISSIONS -->
     <section class="page" data-page="commissions" hidden>
       <div class="wrap commission-grid">
+        <div class="commission-photo" data-aside-photo></div>
+
         <div class="form-col">
           <h1 class="sr-only">Commissions</h1>
-          <form class="inquiry reg-box" data-form data-wt="form" novalidate>
-            <span class="rx tl"></span><span class="rx tr"></span><span class="rx bl"></span><span class="rx br"></span>
-
+          <form class="inquiry" data-form data-wt="form" novalidate>
             <div class="field">
-              <label class="label" for="f-desc">Your idea</label>
-              <textarea id="f-desc" name="description" rows="8" required></textarea>
+              <label class="idea-label" for="f-desc">Your idea</label>
+              <textarea id="f-desc" class="idea-input" name="description" rows="7" required placeholder="Start here…"></textarea>
               <p class="err" data-err="description" hidden>Add a few words about the idea.</p>
             </div>
 
             <div class="field two">
               <div>
-                <label class="label" for="f-name">Name</label>
+                <label class="field-label" for="f-name">Name</label>
                 <input id="f-name" name="name" autocomplete="name" required>
                 <p class="err" data-err="name" hidden>Add your name.</p>
               </div>
               <div>
-                <label class="label" for="f-email">Email</label>
+                <label class="field-label" for="f-email">Email</label>
                 <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>
                 <p class="err" data-err="email" hidden>Add a valid email.</p>
               </div>
             </div>
 
             <div class="send-bar">
-              <button class="btn-primary tap" type="submit" data-send>Send</button>
+              <button class="btn-primary btn-send tap" type="submit" data-send>Send</button>
               <p class="err" data-err="send" hidden></p>
             </div>
           </form>
@@ -114,17 +114,16 @@
             <h2 class="display-line">Sent.</h2>
             <p data-confirm-text></p>
           </div>
-        </div>
 
-        <aside class="next-note">
-          <div class="aside-photo" data-aside-photo></div>
-          <h2 class="label muted">Next</h2>
-          <ol class="next-list">
-            <li><span class="num">1</span><span data-rid="reply-time">Reply within a week</span></li>
-            <li><span class="num">2</span><span>Call or visit</span></li>
-            <li><span class="num">3</span><span>Drawings and quote</span></li>
-          </ol>
-        </aside>
+          <div class="next-note">
+            <h2 class="label muted">Next</h2>
+            <ol class="next-list">
+              <li><span class="num">1</span><span data-rid="reply-time">Reply within a week</span></li>
+              <li><span class="num">2</span><span>Call or visit</span></li>
+              <li><span class="num">3</span><span>Drawings and quote</span></li>
+            </ol>
+          </div>
+        </div>
       </div>
     </section>
   </main>
