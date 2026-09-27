@@ -453,7 +453,7 @@ function wirePieceView(p) {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && openSlug && !html.classList.contains('wt-active')) requestClose();
+  if (e.key === 'Escape' && openSlug) requestClose();
   if (e.key === 'Tab' && openSlug) {
     const f = $$('a[href], button, [tabindex="0"]', layer).filter((el) => el.offsetParent);
     if (!f.length) return;
