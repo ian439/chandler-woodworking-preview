@@ -40,10 +40,10 @@ function markHTML() {
 function renderMarks() {
   $$('[data-mark="header"]').forEach((el) => (el.innerHTML = markHTML()));
   $$('[data-mark="hero"]').forEach((el) => (el.innerHTML = `${markHTML()}<span class="wordmark reveal-after" aria-hidden="true">${esc(site.name)}</span>`));
-  // Re-fit whenever a typeset mark or the wordmark changes size or first appears (the header mark is
-  // display:none on Work, the hero everywhere else).
+  // Re-fit whenever a typeset mark, the wordmark or the hero box changes size or first appears (the header
+  // mark is display:none on Work, the hero everywhere else).
   markResize.disconnect();
-  $$('.mark-sizer, .wordmark').forEach((el) => markResize.observe(el));
+  $$('.mark-sizer, .wordmark, .hero').forEach((el) => markResize.observe(el));
   fitMarks();
 }
 
@@ -55,6 +55,7 @@ const LOCKUP_GAP = { type: 2.05, drawn: 1.55 }; // letters-to-wordmark-caps gap 
 let measureCtx = null;
 function fitMarks() {
   measureCtx ||= document.createElement('canvas').getContext('2d');
+  fitHero();
   $$('.mark').forEach((mark) => {
     const typed = mark.classList.contains('is-type');
     const under = typed ? fitTypeMark(mark) : 0; // spare room under the letters inside the mark's box
@@ -62,25 +63,57 @@ function fitMarks() {
   });
 }
 
+// Where the ink of `text`, set like `el`, starts and ends in px from the element's left edge (and its canvas
+// metrics). Side bearings, italic overhang and trailing letter-spacing put the ink off the box edges.
+function inkOf(el, text) {
+  const cs = getComputedStyle(el);
+  measureCtx.font = `${cs.fontStyle} ${cs.fontWeight} ${parseFloat(cs.fontSize)}px ${cs.fontFamily}`;
+  const m = measureCtx.measureText(text);
+  return { m, l: -m.actualBoundingBoxLeft, r: m.actualBoundingBoxRight + (parseFloat(cs.letterSpacing) || 0) * (text.length - 1) };
+}
+
+// Shrink the whole lockup, proportionally, when its wordmark would be wider than the hero (heading size and
+// spacing at their maximum on a phone). It never grows, so wide screens keep the full range of the slider.
+// Faces with an optical-size axis set wider when smaller, so the fit is re-measured until it settles.
+function fitHero() {
+  const lockup = $('.hero-mark');
+  const word = lockup && $('.wordmark', lockup);
+  const hero = word && lockup.closest('.hero');
+  if (!hero?.clientWidth) return; // the hero is hidden off the Work page
+  const hcs = getComputedStyle(hero);
+  const room = hero.clientWidth - parseFloat(hcs.paddingLeft) - parseFloat(hcs.paddingRight);
+  let fit = 1;
+  for (let i = 0; i < 4; i++) {
+    lockup.style.setProperty('--fit', fit);
+    const ink = inkOf(word, word.textContent.toUpperCase());
+    const need = Math.max(ink.r - ink.l, $('.mark', lockup).offsetWidth);
+    if (need <= room && (fit === 1 || need > room * .99)) return;
+    fit = Math.floor(Math.min(1, fit * room / need) * 1000) / 1000;
+  }
+  lockup.style.setProperty('--fit', fit);
+}
+
 // Returns the room under the letters in px, or null if the face can't be measured yet.
 function fitTypeMark(mark) {
   const sizer = $('.mark-sizer', mark);
-  const cs = getComputedStyle(sizer);
-  const size = parseFloat(cs.fontSize);
-  const lineH = sizer.offsetHeight;
-  if (!size || !lineH) return null;
-  measureCtx.font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
-  const m = measureCtx.measureText(sizer.textContent);
+  const size = parseFloat(getComputedStyle(sizer).fontSize);
+  if (!size || !sizer.offsetHeight) return null;
+  const { m, l, r } = inkOf(sizer, sizer.textContent);
   if (!m.fontBoundingBoxAscent) return null;
-  const baseline = (lineH - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+  const ascent = m.fontBoundingBoxAscent, descent = m.fontBoundingBoxDescent;
+  // The line box is .9em tall, which trims faces whose caps are taller than that (Newsreader's top edge).
+  // Open it just enough to hold the ink inside, with a hair of air.
+  const need = Math.max(2 * m.actualBoundingBoxAscent - ascent + descent, ascent - descent + 2 * m.actualBoundingBoxDescent);
+  const lh = Math.max(.9, +(need / size + .04).toFixed(3));
+  mark.style.setProperty('--lh', lh);
+  const lineH = lh * size;
+  const baseline = (lineH - (ascent + descent)) / 2 + ascent;
   const letterTop = baseline - m.actualBoundingBoxAscent;
   const letterH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
   mark.style.setProperty('--split', ((letterTop + letterH * CUT_AT) / lineH).toFixed(4));
   mark.style.setProperty('--gap', ((letterH * CUT_GAP) / lineH).toFixed(4));
   // Centre the ink, not the advance box: trailing letter-spacing and side bearings differ per face.
-  const inkL = -m.actualBoundingBoxLeft;
-  const inkR = m.actualBoundingBoxRight + (parseFloat(cs.letterSpacing) || 0) * (sizer.textContent.length - 1);
-  mark.style.setProperty('--ink', ((sizer.getBoundingClientRect().width - inkL - inkR) / 2 / size).toFixed(4));
+  mark.style.setProperty('--ink', ((sizer.getBoundingClientRect().width - l - r) / 2 / size).toFixed(4));
   return lineH - (baseline + m.actualBoundingBoxDescent);
 }
 
@@ -94,16 +127,25 @@ function fitLockup(mark, gap, under) {
   const wsize = parseFloat(wcs.fontSize);
   const wlineH = word.offsetHeight;
   if (!wsize || !wlineH) return;
-  measureCtx.font = `${wcs.fontWeight} ${wsize}px ${wcs.fontFamily}`;
-  const wm = measureCtx.measureText(word.textContent.toUpperCase());
+  const { m: wm, l, r } = inkOf(word, word.textContent.toUpperCase());
   if (!wm.fontBoundingBoxAscent) return;
   const wBaseline = (wlineH - (wm.fontBoundingBoxAscent + wm.fontBoundingBoxDescent)) / 2 + wm.fontBoundingBoxAscent;
   const capsAt = wBaseline - wm.actualBoundingBoxAscent; // spare room over the wordmark's caps
   const lockupEm = parseFloat(getComputedStyle(mark.parentElement).fontSize);
   word.style.marginTop = `${((gap * lockupEm - under - capsAt) / wsize).toFixed(4)}em`;
+  // Centre the wordmark's ink too (its box is centred minus the trailing tracking, but "C" and the last letter
+  // have different side bearings, and italic leans), so the mark sits over the middle of the letters.
+  const track = parseFloat(wcs.letterSpacing) || 0;
+  word.style.setProperty('--ink', ((word.getBoundingClientRect().width - track - l - r) / 2 / wsize).toFixed(4));
 }
 document.fonts?.addEventListener('loadingdone', fitMarks);
-const markResize = new ResizeObserver(() => fitMarks());
+// Deferred a frame: fitting resizes the very elements observed, which inside the callback would raise a
+// "ResizeObserver loop" error. Direct callers (fonts, page switches) have already fitted before the paint.
+let fitFrame = 0;
+const markResize = new ResizeObserver(() => {
+  cancelAnimationFrame(fitFrame);
+  fitFrame = requestAnimationFrame(fitMarks);
+});
 
 /* ---------------- Building blocks ---------------- */
 
@@ -265,6 +307,7 @@ function showPage(page) {
   document.title = TITLES[page];
   setNav(page);
   wireImages($(`[data-page="${page}"]`));
+  fitMarks(); // the hero may have been hidden while the face or size changed; fit before it paints
 }
 
 async function switchPage(page, animate) {

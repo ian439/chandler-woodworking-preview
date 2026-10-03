@@ -60,16 +60,18 @@ html.rv-off .rv-pin { display: none; }
 /* ---------- Font switcher ---------- */
 /* The tab docks to the right edge. "Aa" is set in whatever heading face is picked, so the tab previews the choice. */
 .ff-dock { position: fixed; right: 0; top: 50%; z-index: 72; transform: translateY(-50%); transition: opacity 400ms var(--ease); }
-html.revealing .ff-dock { opacity: 0; } /* held back with the rest of the page until the logo reveal has played */
+html.revealing .ff-dock, html.revealing .rv-notes { opacity: 0; } /* held back with the rest of the page until the logo reveal has played */
+.rv-notes { transition: opacity 400ms var(--ease); }
 .ff-tab {
-  display: flex; flex-direction: column; align-items: center; gap: 10px; width: 46px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 46px;
   background: var(--walnut); color: var(--birch); border-radius: 8px 0 0 8px;
-  padding: 12px 0 14px; font-size: 15px; font-weight: 500; font-family: 'Archivo', system-ui, sans-serif;
+  padding: 12px 4px 14px; font-size: 15px; font-weight: 500; font-family: 'Archivo', system-ui, sans-serif;
 }
+/* Capped so a 140% heading in a wide, heavy face still fits the tab. */
 .ff-aa {
   display: block; line-height: 1; white-space: nowrap; letter-spacing: 0;
-  font-family: var(--display); font-weight: var(--display-weight); font-variation-settings: var(--display-fvs);
-  font-size: calc(24px * var(--display-scale));
+  font-family: var(--display); font-weight: var(--display-weight); font-variation-settings: var(--display-fvs); font-synthesis: none;
+  font-size: calc(24px * min(var(--display-scale), 1.3));
 }
 .ff-lab { display: flex; align-items: center; gap: 8px; writing-mode: vertical-rl; }
 .ff-tab .rv-dot { box-shadow: 0 0 0 2px var(--walnut); }
@@ -110,18 +112,33 @@ html.revealing .ff-dock { opacity: 0; } /* held back with the rest of the page u
 }
 .ff-opt:hover { border-color: var(--driftwood); }
 .ff-opt[aria-pressed="true"] { border-color: var(--walnut); background: #F4F2EE; box-shadow: inset 3px 0 0 var(--walnut); }
-.ff-sample { display: block; line-height: 1.15; color: var(--walnut); }
+.ff-sample { display: block; line-height: 1.15; color: var(--walnut); overflow-wrap: anywhere; } /* wraps on a 320px panel instead of scrolling it sideways */
 .ff-name { display: block; margin-top: 6px; font-size: 13px; color: var(--walnut); }
 .ff-small .ff-name { margin-top: 0; font-size: 14px; }
 .ff-note { color: var(--driftwood); }
-.ff-pick { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--sawdust); font-size: 13px; color: var(--driftwood); line-height: 1.5; }
 html.rv-off .ff-dock { display: none; }
 
 @media (max-width: 767px) {
   /* Compact, and parked above the Commissions send bar so it never sits over the tab bar or the Send button. */
   .ff-dock { top: auto; bottom: calc(var(--tabbar-h) + var(--safe-b) + 96px); transform: none; }
-  .ff-tab { width: 38px; gap: 8px; padding: 9px 0 10px; font-size: 12px; }
-  .ff-aa { font-size: calc(18px * var(--display-scale)); }
+  .ff-tab { min-width: 38px; gap: 8px; padding: 9px 3px 10px; font-size: 12px; }
+  .ff-aa { font-size: calc(18px * min(var(--display-scale), 1.3)); }
   .ff-hint { right: calc(100% + 8px); font-size: 13px; padding: 5px 2px 5px 10px; }
   .ff-panel { padding-bottom: var(--safe-b); }
 }
+
+/* Style controls in the font panel */
+.ff-group-head { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--sawdust); color: var(--walnut); font-weight: 500; }
+.ff-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ff-chip {
+  min-height: 34px; padding: 6px 12px; border: 1px solid var(--sawdust); border-radius: 999px;
+  font-size: 13px; color: var(--walnut); background: transparent;
+  transition: border-color 150ms var(--ease), background-color 150ms var(--ease), color 150ms var(--ease);
+}
+.ff-chip:hover:not([disabled]) { border-color: var(--driftwood); }
+.ff-chip[aria-pressed="true"] { background: var(--walnut); border-color: var(--walnut); color: var(--birch); }
+.ff-chip[disabled] { opacity: .45; cursor: default; }
+.ff-chip[disabled][aria-pressed="true"] { opacity: .7; }
+/* The site's input reset (appearance: none, underline) would leave the slider as a lone thumb. */
+.ff-range { width: 100%; accent-color: var(--walnut); margin: 4px 0 0; padding: 0; border: 0; height: 28px; -webkit-appearance: auto; appearance: auto; cursor: pointer; }
+.ff-pick { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--sawdust); border-radius: 4px; font-size: 13px; color: var(--walnut); line-height: 1.45; }

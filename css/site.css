@@ -11,6 +11,7 @@
   /* Heading / wordmark / logo face. The review build's font switcher overrides these five. */
   --display: 'Crimson Pro', Georgia, serif;
   --display-weight: 500;
+  --display-style: normal;
   --display-fvs: normal;
   --display-scale: 1.14;      /* serif faces read small next to Archivo; titles scale by this */
   --display-caps-track: .16em;
@@ -92,7 +93,8 @@ img { display: block; max-width: 100%; }
 .times { font-stretch: 100%; padding: 0 .3em; }
 .display-line { font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; }
 .display-line, .caption .title, .pv-title, .step h3, .idea-label, .wordmark, .mark-type, .mark-sizer {
-  font-family: var(--display); font-weight: var(--display-weight); font-variation-settings: var(--display-fvs);
+  font-family: var(--display); font-weight: var(--display-weight); font-style: var(--display-style);
+  font-variation-settings: var(--display-fvs); font-synthesis: none;
 }
 .section-title { font-size: var(--fs-label); font-stretch: 125%; font-weight: 500; color: var(--driftwood); margin-bottom: 20px; }
 .text-link { border-bottom: 1px solid var(--sawdust); transition: border-color var(--t-feedback) var(--ease); }
@@ -152,11 +154,12 @@ html[data-page="work"] .nav-desktop { margin-top: 0; }
 .mark-half.bot .mark-in { bottom: 0; height: calc(100% / (1 - var(--split) - var(--gap) / 2)); }
 /* Typeset mode: "CW" in the heading face, with the same cut as the drawn mark (the drawn SVG has its
    gap built in, so --gap stays 0 there). site.js measures each face and sets --split / --gap per mark. */
-.mark.is-type { --split: .56; --gap: .07; --ink: 0; display: inline-block; aspect-ratio: auto; width: auto !important; translate: calc(var(--ink) * 1em) 0 !important; }
-/* The clip boxes reach .12em past the letters on each side so overhanging serifs are never trimmed. */
-.mark.is-type .mark-half { left: -.12em; right: -.12em; }
-.mark.is-type .mark-in { left: .12em; width: calc(100% - .24em); }
-.mark-type, .mark-sizer { display: block; line-height: .9; white-space: nowrap; letter-spacing: .02em; color: var(--walnut); }
+.mark.is-type { --split: .56; --gap: .07; --ink: 0; --over: .2em; display: inline-block; aspect-ratio: auto; width: auto !important; translate: calc(var(--ink) * 1em) 0 !important; }
+/* The clip boxes reach --over past the letters on each side so overhanging serifs (italic W) are never trimmed. */
+.mark.is-type .mark-half { left: calc(-1 * var(--over)); right: calc(-1 * var(--over)); }
+.mark.is-type .mark-in { left: var(--over); width: calc(100% - 2 * var(--over)); }
+/* .9em is tight enough for most faces; site.js raises --lh for faces whose caps are taller than that. */
+.mark-type, .mark-sizer { display: block; line-height: var(--lh, .9); white-space: nowrap; letter-spacing: .02em; color: var(--walnut); }
 .mark-sizer { visibility: hidden; }
 .mark svg { display: block; width: 100%; height: 100%; }
 .mark path { fill: var(--walnut); }
@@ -200,7 +203,7 @@ html.revealing .tabbar { opacity: 0; }
 }
 /* Stacked lockup: small mark centred over the wordmark. Everything is in em of the wordmark size,
    so proportions hold at every width. */
-.hero-mark { display: flex; flex-direction: column; align-items: center; font-size: clamp(17px, 1.9vw, 24px); }
+.hero-mark { display: flex; flex-direction: column; align-items: center; font-size: calc(clamp(17px, 1.9vw, 24px) * var(--fit, 1)); } /* site.js sets --fit < 1 when the lockup would be wider than the hero */
 .hero-mark .mark { width: 6.4em; translate: .82% 0; } /* mark ink sits 0.34 of 41 units left of its box */
 .hero-mark .mark.is-type { font-size: calc(4.4em * var(--display-scale)); }
 .wordmark {
@@ -209,6 +212,7 @@ html.revealing .tabbar { opacity: 0; }
   text-transform: uppercase; letter-spacing: var(--display-caps-track);
   margin-right: calc(-1 * var(--display-caps-track)); /* cancel trailing tracking so it centres */
   white-space: nowrap;
+  translate: calc(var(--ink, 0) * 1em) 0; /* site.js: centres the ink itself, past side bearings and italic overhang */
 }
 
 .sequence { max-width: calc(var(--max) + 2 * var(--gutter)); margin: 48px auto 0; padding: 0 var(--gutter); }
@@ -273,7 +277,10 @@ html.revealing .tabbar { opacity: 0; }
 }
 .pv-photos { padding: 72px var(--rail) 72px 0; display: flex; flex-direction: column; gap: 16px; }
 .pv-photos .media { margin: 0; }
-.pv-info { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 64px 0; }
+.pv-info {
+  position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px 0;
+  justify-content: safe center; overflow-y: auto; /* on a short window or a big heading it scrolls instead of clipping its top */
+}
 .pv-info .num { color: var(--driftwood); }
 .pv-title { font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; margin-top: 8px; }
 .specs { margin-top: 32px; border-top: 1px solid var(--sawdust); }
@@ -426,7 +433,7 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   .tabbar a[aria-current="page"]::before { transform: none; }
 
   .hero { margin-top: 8px; min-height: 0; padding: 56px 16px 48px; }
-  .hero-mark { font-size: 17px; }
+  .hero-mark { font-size: calc(17px * var(--fit, 1)); }
 
   .piece-link > .media { margin: 0; }
   .piece-link .dims { display: none; } /* the height line sits 24px outside the photo and would push the page wider than the screen */
