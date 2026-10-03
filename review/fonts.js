@@ -2,6 +2,7 @@
 // The choice is kept in this browser; once he settles, the winner goes into site.css as the default.
 
 const KEY = 'cw-review-fonts-v1';
+const HINT_KEY = 'cw-review-fonts-hint-v1';
 const html = document.documentElement;
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -93,11 +94,19 @@ function renderPanel() {
     <p class="ff-pick">Current pick: ${esc(d.name)} headings, ${esc(m.name.charAt(0).toLowerCase() + m.name.slice(1))}, ${esc(b.name)} body.</p>`;
 }
 
+// The hint beside the tab shows until the panel is opened or the hint is dismissed, then never again.
+function hintSeen() {
+  try { return localStorage.getItem(HINT_KEY) === '1'; } catch { return false; }
+}
+
 function mount() {
   wrap = document.createElement('div');
   wrap.className = 'ff';
   wrap.innerHTML = `
-    <button class="ff-tab tap" type="button" aria-expanded="false" aria-controls="ff-panel"><i class="rv-dot" aria-hidden="true"></i>Fonts</button>
+    <div class="ff-dock">
+      <button class="ff-tab tap" type="button" aria-expanded="false" aria-controls="ff-panel"><span class="ff-aa" aria-hidden="true">Aa</span><span class="ff-lab"><i class="rv-dot" aria-hidden="true"></i>Fonts</span></button>
+      ${hintSeen() ? '' : '<div class="ff-hint" role="note"><span>Try other fonts</span><button type="button" class="ff-hint-x" aria-label="Dismiss hint">×</button></div>'}
+    </div>
     <div class="ff-panel" id="ff-panel" role="dialog" aria-label="Try fonts" hidden>
       <div class="ff-head"><span>Try fonts</span><button type="button" class="ff-close" aria-label="Close">×</button></div>
       <div class="ff-body"></div>
@@ -105,8 +114,14 @@ function mount() {
   document.body.appendChild(wrap);
   const tab = wrap.querySelector('.ff-tab');
   const panel = wrap.querySelector('.ff-panel');
+  const hideHint = () => {
+    wrap.querySelector('.ff-hint')?.remove();
+    try { localStorage.setItem(HINT_KEY, '1'); } catch {}
+  };
+  wrap.querySelector('.ff-hint-x')?.addEventListener('click', () => { hideHint(); tab.focus({ preventScroll: true }); });
   const setOpen = (open) => {
     if (open) {
+      hideHint();
       DISPLAY.concat(BODY).forEach((o) => loadFont(o.css)); // so every preview renders in its own face
       panel.hidden = false;
       requestAnimationFrame(() => wrap.classList.add('open'));
@@ -127,6 +142,9 @@ function mount() {
     pick = { ...pick, [b.dataset.group]: b.dataset.id };
     apply();
     if (markChanged) window.CW?.setMarkMode(pick.mark);
+    // Re-measure the cut once the new face is in (fonts already loaded don't fire 'loadingdone').
+    const d = find(DISPLAY, pick.display);
+    document.fonts.load(`${d.weight} 100px ${d.family}`).finally(() => window.CW?.fitMarks());
   });
   renderPanel();
 }

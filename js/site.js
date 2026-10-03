@@ -16,6 +16,8 @@ const isMobile = () => mqMobile.matches;
 const reduced = () => mqReduced.matches;
 const canVT = () => typeof document.startViewTransition === 'function' && !reduced();
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// A skipped view transition (hidden tab, a newer one starting) rejects `ready`; there is nothing to do about it.
+const settled = (t) => { t.ready.catch(() => {}); return t.finished.catch(() => {}); };
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 /* ---------------- Mark ---------------- */
@@ -38,7 +40,70 @@ function markHTML() {
 function renderMarks() {
   $$('[data-mark="header"]').forEach((el) => (el.innerHTML = markHTML()));
   $$('[data-mark="hero"]').forEach((el) => (el.innerHTML = `${markHTML()}<span class="wordmark reveal-after" aria-hidden="true">${esc(site.name)}</span>`));
+  // Re-fit whenever a typeset mark or the wordmark changes size or first appears (the header mark is
+  // display:none on Work, the hero everywhere else).
+  markResize.disconnect();
+  $$('.mark-sizer, .wordmark').forEach((el) => markResize.observe(el));
+  fitMarks();
 }
+
+// Place the cut through a typeset CW where the drawn mark has it: 63% down the letters, measured from the
+// real glyph box of whatever face is active (each font sits differently inside its line box).
+const CUT_AT = 11.93 / 18.1; // centre of the drawn mark's gap, as a share of its letter height
+const CUT_GAP = 2.5 / 18.1;  // gap thickness as a share of letter height, same as the drawn mark
+const LOCKUP_GAP = { type: 2.05, drawn: 1.55 }; // letters-to-wordmark-caps gap in lockup ems, as set in the default face
+let measureCtx = null;
+function fitMarks() {
+  measureCtx ||= document.createElement('canvas').getContext('2d');
+  $$('.mark').forEach((mark) => {
+    const typed = mark.classList.contains('is-type');
+    const under = typed ? fitTypeMark(mark) : 0; // spare room under the letters inside the mark's box
+    if (under !== null) fitLockup(mark, LOCKUP_GAP[typed ? 'type' : 'drawn'], under);
+  });
+}
+
+// Returns the room under the letters in px, or null if the face can't be measured yet.
+function fitTypeMark(mark) {
+  const sizer = $('.mark-sizer', mark);
+  const cs = getComputedStyle(sizer);
+  const size = parseFloat(cs.fontSize);
+  const lineH = sizer.offsetHeight;
+  if (!size || !lineH) return null;
+  measureCtx.font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+  const m = measureCtx.measureText(sizer.textContent);
+  if (!m.fontBoundingBoxAscent) return null;
+  const baseline = (lineH - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+  const letterTop = baseline - m.actualBoundingBoxAscent;
+  const letterH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+  mark.style.setProperty('--split', ((letterTop + letterH * CUT_AT) / lineH).toFixed(4));
+  mark.style.setProperty('--gap', ((letterH * CUT_GAP) / lineH).toFixed(4));
+  // Centre the ink, not the advance box: trailing letter-spacing and side bearings differ per face.
+  const inkL = -m.actualBoundingBoxLeft;
+  const inkR = m.actualBoundingBoxRight + (parseFloat(cs.letterSpacing) || 0) * (sizer.textContent.length - 1);
+  mark.style.setProperty('--ink', ((sizer.getBoundingClientRect().width - inkL - inkR) / 2 / size).toFixed(4));
+  return lineH - (baseline + m.actualBoundingBoxDescent);
+}
+
+// In the hero lockup, hold the gap from the letters to the wordmark's caps constant: each sits in a line box
+// whose spare room above and below the glyphs differs per face. Everything scales with the lockup, so the
+// margin is set in the wordmark's own ems and stays right when the viewport resizes.
+function fitLockup(mark, gap, under) {
+  const word = $('.wordmark', mark.parentElement);
+  if (!word) return;
+  const wcs = getComputedStyle(word);
+  const wsize = parseFloat(wcs.fontSize);
+  const wlineH = word.offsetHeight;
+  if (!wsize || !wlineH) return;
+  measureCtx.font = `${wcs.fontWeight} ${wsize}px ${wcs.fontFamily}`;
+  const wm = measureCtx.measureText(word.textContent.toUpperCase());
+  if (!wm.fontBoundingBoxAscent) return;
+  const wBaseline = (wlineH - (wm.fontBoundingBoxAscent + wm.fontBoundingBoxDescent)) / 2 + wm.fontBoundingBoxAscent;
+  const capsAt = wBaseline - wm.actualBoundingBoxAscent; // spare room over the wordmark's caps
+  const lockupEm = parseFloat(getComputedStyle(mark.parentElement).fontSize);
+  word.style.marginTop = `${((gap * lockupEm - under - capsAt) / wsize).toFixed(4)}em`;
+}
+document.fonts?.addEventListener('loadingdone', fitMarks);
+const markResize = new ResizeObserver(() => fitMarks());
 
 /* ---------------- Building blocks ---------------- */
 
@@ -150,7 +215,6 @@ mqMobile.addEventListener('change', () => {
     f.classList.toggle('r-45', isMobile());
   });
   if (openSlug) closePiece({ animate: false }).then(() => history.replaceState({}, '', '/'));
-  positionNav(false);
 });
 
 /* ---------------- Nav ---------------- */
@@ -172,7 +236,12 @@ function positionNav(animate) {
   ind.style.transform = `translateX(${active.offsetLeft}px)`;
   if (!animate) requestAnimationFrame(() => (ind.style.transition = ''));
 }
-addEventListener('resize', () => positionNav(false));
+// The underline follows the links, not events: any change in their size or position (viewport resize,
+// breakpoint switch, a new body face swapping in) re-measures it.
+const navResize = new ResizeObserver(() => positionNav(false));
+navResize.observe($('.nav-desktop'));
+$$('.nav-desktop a').forEach((a) => navResize.observe(a));
+document.fonts?.addEventListener('loadingdone', () => positionNav(false));
 
 /* ---------------- Routing ---------------- */
 
@@ -206,7 +275,7 @@ async function switchPage(page, animate) {
   }
   if (canVT()) {
     const t = document.startViewTransition(() => { showPage(page); scrollTo(0, 0); });
-    await t.finished.catch(() => {});
+    await settled(t);
   } else {
     const main = $('#main');
     main.style.transition = 'opacity 100ms var(--ease)';
@@ -326,7 +395,7 @@ async function openPiece(slug, { animate }) {
       layer.hidden = false;
       lock(true);
     });
-    await t.finished.catch(() => {});
+    await settled(t);
     firstImg.style.viewTransitionName = '';
     html.classList.remove('vt-piece');
   } else {
@@ -368,7 +437,7 @@ async function closePiece({ animate }) {
       if (r.bottom < 0 || r.top > innerHeight) seqImg.scrollIntoView({ block: 'center' });
       seqImg.style.viewTransitionName = 'piece-hero';
     });
-    await t.finished.catch(() => {});
+    await settled(t);
     seqImg.style.viewTransitionName = '';
     html.classList.remove('vt-piece');
   }
@@ -560,6 +629,7 @@ async function reveal() {
   const mark = $(`${which} .mark`);
   // Start only once fonts are in and the page has painted, so nothing reflows or stutters mid-reveal.
   await Promise.race([document.fonts?.ready, wait(900)]);
+  fitMarks();
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   // A background tab can hold rAF past the 3s failsafe; if the page is already showing, don't replay.
   if (!html.classList.contains('revealing')) return done();
@@ -576,6 +646,7 @@ window.CW = {
     html.dataset.mark = mode;
     renderMarks();
   },
+  fitMarks,
   REVIEW,
   site,
   pieces,
@@ -592,6 +663,5 @@ renderStatic();
 if (!history.state) history.replaceState({}, '', location.pathname + location.search);
 apply(false).then(() => {
   positionNav(false);
-  document.fonts?.ready.then(() => positionNav(false));
   reveal();
 });

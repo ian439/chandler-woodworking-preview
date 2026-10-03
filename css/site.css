@@ -143,15 +143,19 @@ html[data-page="work"] .nav-desktop { margin-top: 0; }
 /* ---------- Mark ---------- */
 /* The mark is two stacked copies of the logo, each clipped at the kerf (y 11.93 of 19),
    so the halves can be moved as composited layers during the reveal. */
-.mark { --split: .6279; position: relative; display: block; aspect-ratio: 41 / 19; }
+.mark { --split: .6279; --gap: 0; position: relative; display: block; aspect-ratio: 41 / 19; }
 .mark-half { position: absolute; left: 0; right: 0; overflow: hidden; }
-.mark-half.top { top: 0; height: calc(var(--split) * 100%); }
-.mark-half.bot { top: calc(var(--split) * 100%); bottom: 0; }
+.mark-half.top { top: 0; height: calc((var(--split) - var(--gap) / 2) * 100%); }
+.mark-half.bot { top: calc((var(--split) + var(--gap) / 2) * 100%); bottom: 0; }
 .mark-in { position: absolute; left: 0; width: 100%; display: block; }
-.mark-half.top .mark-in { top: 0; height: calc(100% / var(--split)); }
-.mark-half.bot .mark-in { bottom: 0; height: calc(100% / (1 - var(--split))); }
-/* Typeset mode: "CW" in the heading face. A hidden copy sizes the box; the split runs through the letters. */
-.mark.is-type { --split: .56; display: inline-block; aspect-ratio: auto; width: auto !important; translate: none !important; }
+.mark-half.top .mark-in { top: 0; height: calc(100% / (var(--split) - var(--gap) / 2)); }
+.mark-half.bot .mark-in { bottom: 0; height: calc(100% / (1 - var(--split) - var(--gap) / 2)); }
+/* Typeset mode: "CW" in the heading face, with the same cut as the drawn mark (the drawn SVG has its
+   gap built in, so --gap stays 0 there). site.js measures each face and sets --split / --gap per mark. */
+.mark.is-type { --split: .56; --gap: .07; --ink: 0; display: inline-block; aspect-ratio: auto; width: auto !important; translate: calc(var(--ink) * 1em) 0 !important; }
+/* The clip boxes reach .12em past the letters on each side so overhanging serifs are never trimmed. */
+.mark.is-type .mark-half { left: -.12em; right: -.12em; }
+.mark.is-type .mark-in { left: .12em; width: calc(100% - .24em); }
 .mark-type, .mark-sizer { display: block; line-height: .9; white-space: nowrap; letter-spacing: .02em; color: var(--walnut); }
 .mark-sizer { visibility: hidden; }
 .mark svg { display: block; width: 100%; height: 100%; }
@@ -163,9 +167,9 @@ html[data-page="work"] .nav-desktop { margin-top: 0; }
 
 /* Reveal: hidden from the first frame (class set inline in <head>), then played once. */
 html.revealing[data-reveal="hero"] .hero-mark .mark-half.top .mark-in,
-html.revealing[data-reveal="header"] .header-mark .mark-half.top .mark-in { transform: translateY(calc(var(--split) * 100%)); }
+html.revealing[data-reveal="header"] .header-mark .mark-half.top .mark-in { transform: translateY(calc((var(--split) - var(--gap) / 2) * 100%)); }
 html.revealing[data-reveal="hero"] .hero-mark .mark-half.bot .mark-in,
-html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { transform: translateY(calc((var(--split) - 1) * 100%)); }
+html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { transform: translateY(calc((var(--split) + var(--gap) / 2 - 1) * 100%)); }
 .mark.play .mark-in, .mark.play .kerf { will-change: transform, opacity; }
 .mark.play .kerf { animation: kerf 1000ms cubic-bezier(.4, 0, .2, 1) both; }
 .mark.play .mark-half.top .mark-in { animation: rise 760ms var(--ease) 180ms both; }
@@ -176,8 +180,8 @@ html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { tran
   62% { opacity: 1; transform: scaleX(1); }
   100% { opacity: 0; transform: scaleX(1); }
 }
-@keyframes rise { from { transform: translateY(calc(var(--split) * 100%)); } to { transform: translateY(0); } }
-@keyframes drop { from { transform: translateY(calc((var(--split) - 1) * 100%)); } to { transform: translateY(0); } }
+@keyframes rise { from { transform: translateY(calc((var(--split) - var(--gap) / 2) * 100%)); } to { transform: translateY(0); } }
+@keyframes drop { from { transform: translateY(calc((var(--split) + var(--gap) / 2 - 1) * 100%)); } to { transform: translateY(0); } }
 
 html.revealing[data-reveal="hero"] .header-mark,
 html.revealing .site-header > nav,
@@ -375,7 +379,7 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 .inquiry, .confirm { transition: opacity var(--t-state) var(--ease); }
 .inquiry.out, .confirm.pre { opacity: 0; }
 .confirm { max-width: 46ch; }
-.confirm p { margin-top: 16px; }
+.confirm p { margin-top: 16px; overflow-wrap: anywhere; } /* echoes the visitor's email, which can be one long unbreakable word */
 
 .next-note { margin-top: 56px; }
 .next-list { margin-top: 20px; border-top: 1px solid var(--sawdust); }
@@ -425,6 +429,7 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   .hero-mark { font-size: 17px; }
 
   .piece-link > .media { margin: 0; }
+  .piece-link .dims { display: none; } /* the height line sits 24px outside the photo and would push the page wider than the screen */
   .sequence { margin-top: 24px; }
   .details { margin: 8px 0 0; gap: 8px; }
   .piece { min-height: 0; }
@@ -472,7 +477,8 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   .pv-inner { display: block; padding: 0; }
   .pv-grab { display: block; height: 28px; position: sticky; top: 0; z-index: 2; background: var(--birch); }
   .pv-grab::before { content: ''; position: absolute; left: 50%; top: 10px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--sawdust); }
-  .pv-close { position: absolute; top: 0; right: 6px; padding: 8px; z-index: 3; }
+  /* Sticky so the × stays reachable while the sheet scrolls; pulled up into the grab bar's row. */
+  .pv-close { position: sticky; top: 0; z-index: 3; width: fit-content; margin: -32px 6px 0 auto; padding: 8px; }
   .pv-close span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .pv-photos {
     padding: 0; flex-direction: row; gap: 0; overflow-x: auto; scroll-snap-type: x mandatory;
