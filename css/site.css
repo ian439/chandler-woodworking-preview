@@ -8,7 +8,12 @@
   --oak: #B89A6E;
   --steel: #4A4E50;
 
-  --display: 'Alata', 'Archivo', system-ui, sans-serif;
+  /* Heading / wordmark / logo face. The review build's font switcher overrides these five. */
+  --display: 'Crimson Pro', Georgia, serif;
+  --display-weight: 500;
+  --display-fvs: normal;
+  --display-scale: 1.14;      /* serif faces read small next to Archivo; titles scale by this */
+  --display-caps-track: .16em;
   --sans: 'Archivo', system-ui, -apple-system, sans-serif;
 
   --fs-label: 14px;
@@ -85,7 +90,10 @@ img { display: block; max-width: 100%; }
 }
 .muted { color: var(--driftwood); }
 .times { font-stretch: 100%; padding: 0 .3em; }
-.display-line { font-family: var(--display); font-weight: 400; font-size: var(--fs-title); line-height: 1.2; letter-spacing: -.005em; }
+.display-line { font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; }
+.display-line, .caption .title, .pv-title, .step h3, .idea-label, .wordmark, .mark-type, .mark-sizer {
+  font-family: var(--display); font-weight: var(--display-weight); font-variation-settings: var(--display-fvs);
+}
 .section-title { font-size: var(--fs-label); font-stretch: 125%; font-weight: 500; color: var(--driftwood); margin-bottom: 20px; }
 .text-link { border-bottom: 1px solid var(--sawdust); transition: border-color var(--t-feedback) var(--ease); }
 .text-link:hover { border-color: var(--walnut); }
@@ -119,6 +127,7 @@ img { display: block; max-width: 100%; }
 html[data-page="work"] .header-mark { display: none; }
 html[data-page="work"] .nav-desktop { margin-top: 0; }
 .header-mark .mark { width: 56px; }
+.header-mark .mark.is-type { font-size: calc(34px * var(--display-scale)); }
 .nav-desktop { position: relative; display: flex; justify-content: center; gap: 40px; margin-top: 16px; }
 .nav-desktop a {
   font-size: var(--fs-label); font-stretch: 125%; color: var(--driftwood);
@@ -134,25 +143,29 @@ html[data-page="work"] .nav-desktop { margin-top: 0; }
 /* ---------- Mark ---------- */
 /* The mark is two stacked copies of the logo, each clipped at the kerf (y 11.93 of 19),
    so the halves can be moved as composited layers during the reveal. */
-.mark { position: relative; display: block; aspect-ratio: 41 / 19; }
+.mark { --split: .6279; position: relative; display: block; aspect-ratio: 41 / 19; }
 .mark-half { position: absolute; left: 0; right: 0; overflow: hidden; }
-.mark-half.top { top: 0; height: 62.79%; }
-.mark-half.bot { top: 62.79%; bottom: 0; }
-.mark-in { position: absolute; left: 0; width: 100%; aspect-ratio: 41 / 19; display: block; }
-.mark-half.top .mark-in { top: 0; }
-.mark-half.bot .mark-in { bottom: 0; }
+.mark-half.top { top: 0; height: calc(var(--split) * 100%); }
+.mark-half.bot { top: calc(var(--split) * 100%); bottom: 0; }
+.mark-in { position: absolute; left: 0; width: 100%; display: block; }
+.mark-half.top .mark-in { top: 0; height: calc(100% / var(--split)); }
+.mark-half.bot .mark-in { bottom: 0; height: calc(100% / (1 - var(--split))); }
+/* Typeset mode: "CW" in the heading face. A hidden copy sizes the box; the split runs through the letters. */
+.mark.is-type { --split: .56; display: inline-block; aspect-ratio: auto; width: auto !important; translate: none !important; }
+.mark-type, .mark-sizer { display: block; line-height: .9; white-space: nowrap; letter-spacing: .02em; color: var(--walnut); }
+.mark-sizer { visibility: hidden; }
 .mark svg { display: block; width: 100%; height: 100%; }
 .mark path { fill: var(--walnut); }
 .mark .kerf {
-  position: absolute; left: -2%; right: -2%; top: 62.79%; height: 1px; margin-top: -.5px;
+  position: absolute; left: -2%; right: -2%; top: calc(var(--split) * 100%); height: 1px; margin-top: -.5px;
   background: var(--steel); opacity: 0; transform: scaleX(0);
 }
 
 /* Reveal: hidden from the first frame (class set inline in <head>), then played once. */
 html.revealing[data-reveal="hero"] .hero-mark .mark-half.top .mark-in,
-html.revealing[data-reveal="header"] .header-mark .mark-half.top .mark-in { transform: translateY(62.79%); }
+html.revealing[data-reveal="header"] .header-mark .mark-half.top .mark-in { transform: translateY(calc(var(--split) * 100%)); }
 html.revealing[data-reveal="hero"] .hero-mark .mark-half.bot .mark-in,
-html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { transform: translateY(-37.21%); }
+html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { transform: translateY(calc((var(--split) - 1) * 100%)); }
 .mark.play .mark-in, .mark.play .kerf { will-change: transform, opacity; }
 .mark.play .kerf { animation: kerf 1000ms cubic-bezier(.4, 0, .2, 1) both; }
 .mark.play .mark-half.top .mark-in { animation: rise 760ms var(--ease) 180ms both; }
@@ -163,8 +176,8 @@ html.revealing[data-reveal="header"] .header-mark .mark-half.bot .mark-in { tran
   62% { opacity: 1; transform: scaleX(1); }
   100% { opacity: 0; transform: scaleX(1); }
 }
-@keyframes rise { from { transform: translateY(62.79%); } to { transform: translateY(0); } }
-@keyframes drop { from { transform: translateY(-37.21%); } to { transform: translateY(0); } }
+@keyframes rise { from { transform: translateY(calc(var(--split) * 100%)); } to { transform: translateY(0); } }
+@keyframes drop { from { transform: translateY(calc((var(--split) - 1) * 100%)); } to { transform: translateY(0); } }
 
 html.revealing[data-reveal="hero"] .header-mark,
 html.revealing .site-header > nav,
@@ -185,10 +198,12 @@ html.revealing .tabbar { opacity: 0; }
    so proportions hold at every width. */
 .hero-mark { display: flex; flex-direction: column; align-items: center; font-size: clamp(17px, 1.9vw, 24px); }
 .hero-mark .mark { width: 6.4em; translate: .82% 0; } /* mark ink sits 0.34 of 41 units left of its box */
+.hero-mark .mark.is-type { font-size: calc(4.4em * var(--display-scale)); }
 .wordmark {
-  display: block; margin-top: 1.25em;
-  font-family: var(--display); font-weight: 400; font-size: 1em; line-height: 1;
-  text-transform: uppercase; letter-spacing: .2em; margin-right: -.2em; /* cancel trailing tracking so it centres */
+  display: block; margin-top: 1.1em;
+  font-size: calc(1em * var(--display-scale)); line-height: 1;
+  text-transform: uppercase; letter-spacing: var(--display-caps-track);
+  margin-right: calc(-1 * var(--display-caps-track)); /* cancel trailing tracking so it centres */
   white-space: nowrap;
 }
 
@@ -205,7 +220,7 @@ html.revealing .tabbar { opacity: 0; }
 }
 .caption .num, .caption .meta { color: var(--driftwood); }
 .caption .meta-row { display: contents; }
-.caption .title { font-family: var(--display); font-size: var(--fs-title); line-height: 1.2; }
+.caption .title { font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; }
 .title-u { position: relative; display: inline-block; }
 .title-u::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: var(--walnut);
@@ -256,7 +271,7 @@ html.revealing .tabbar { opacity: 0; }
 .pv-photos .media { margin: 0; }
 .pv-info { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 64px 0; }
 .pv-info .num { color: var(--driftwood); }
-.pv-title { font-family: var(--display); font-weight: 400; font-size: var(--fs-title); line-height: 1.2; margin-top: 8px; }
+.pv-title { font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; margin-top: 8px; }
 .specs { margin-top: 32px; border-top: 1px solid var(--sawdust); }
 .specs div { display: grid; grid-template-columns: 96px 1fr; padding: 10px 0; border-bottom: 1px solid var(--sawdust); }
 .specs dt { font-size: var(--fs-label); font-stretch: 125%; color: var(--driftwood); }
@@ -304,7 +319,7 @@ html.vt-piece::view-transition-old(root), html.vt-piece::view-transition-new(roo
 .step { position: relative; padding-top: 24px; border-top: 1px solid var(--sawdust); }
 .step::before { content: ''; position: absolute; left: 0; top: -4px; width: 1px; height: 8px; background: var(--steel); }
 .step .num { color: var(--driftwood); }
-.step h3 { font-family: var(--display); font-weight: 400; font-size: var(--fs-lead); line-height: 1.2; margin-top: 8px; }
+.step h3 { font-size: calc(var(--fs-lead) * var(--display-scale)); line-height: 1.15; margin-top: 8px; }
 .step .time { display: inline-block; margin-top: 8px; font-size: var(--fs-label); font-stretch: 125%; color: var(--steel); }
 .step p { margin-top: 12px; font-size: var(--fs-label); line-height: 1.5; color: var(--walnut); }
 .shop-wrap { margin-top: var(--piece-gap); }
@@ -317,7 +332,7 @@ html.vt-piece::view-transition-old(root), html.vt-piece::view-transition-new(roo
 .inquiry { padding: 0; }
 
 /* The idea field reads as a ruled sheet to write on. */
-.idea-label { display: block; font-family: var(--display); font-size: var(--fs-title); line-height: 1.2; margin-bottom: 16px; }
+.idea-label { display: block; font-size: calc(var(--fs-title) * var(--display-scale)); line-height: 1.15; margin-bottom: 16px; }
 .field-label { display: block; font-size: var(--fs-body); font-weight: 500; margin-bottom: 4px; }
 .idea-input {
   display: block; width: 100%; border: 0; border-radius: 0; padding: 0; resize: none;
@@ -386,6 +401,7 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   body { padding-bottom: calc(var(--tabbar-h) + var(--safe-b)); }
   .site-header { padding-top: calc(20px + var(--safe-t)); }
   .header-mark .mark { width: 36px; }
+  .header-mark .mark.is-type { font-size: calc(24px * var(--display-scale)); }
   .nav-desktop { display: none; }
 
   .tabbar {

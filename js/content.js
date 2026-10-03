@@ -6,6 +6,8 @@ export const site = {
   email: 'studio@chandlerwoodworking.com',
   instagram: { handle: 'casey.chandler.11', url: 'https://www.instagram.com/casey.chandler.11/' },
   location: 'Santa Cruz',
+  // 'type' = CW set in the heading font; 'drawn' = Casey's original drawn mark (CW.svg).
+  mark: 'type',
 };
 
 // Photo entries: { src, alt, pos (object-position), zoom? } or { missing: true }.

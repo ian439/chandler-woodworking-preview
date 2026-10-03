@@ -1,4 +1,6 @@
 // Review layer: chalk-red note dots (filler photos, stand-in text, example values) and the notes button.
+
+import './fonts.js';
 // Only copied into the build when REVIEW_MODE is on (see build.mjs).
 
 const NOTES_KEY = 'cw-review-notes-hidden';

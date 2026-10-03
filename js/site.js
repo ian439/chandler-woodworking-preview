@@ -20,14 +20,24 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 
 /* ---------------- Mark ---------------- */
 
-function markHTML(label) {
-  const svg = `<svg viewBox="0 0 41 19" aria-hidden="true" focusable="false"><path d="${MARK_PATH}"/></svg>`;
-  const a11y = label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true"';
-  return `<span class="mark" ${a11y}>
-    <span class="mark-half top"><span class="mark-in">${svg}</span></span>
-    <span class="mark-half bot"><span class="mark-in">${svg}</span></span>
+const markMode = () => html.dataset.mark || site.mark || 'type';
+
+function markHTML() {
+  const typed = markMode() === 'type';
+  const art = typed
+    ? '<span class="mark-type">CW</span>'
+    : `<svg viewBox="0 0 41 19" aria-hidden="true" focusable="false"><path d="${MARK_PATH}"/></svg>`;
+  return `<span class="mark${typed ? ' is-type' : ''}" aria-hidden="true">
+    ${typed ? '<span class="mark-sizer">CW</span>' : ''}
+    <span class="mark-half top"><span class="mark-in">${art}</span></span>
+    <span class="mark-half bot"><span class="mark-in">${art}</span></span>
     <span class="kerf"></span>
   </span>`;
+}
+
+function renderMarks() {
+  $$('[data-mark="header"]').forEach((el) => (el.innerHTML = markHTML()));
+  $$('[data-mark="hero"]').forEach((el) => (el.innerHTML = `${markHTML()}<span class="wordmark reveal-after" aria-hidden="true">${esc(site.name)}</span>`));
 }
 
 /* ---------------- Building blocks ---------------- */
@@ -67,8 +77,7 @@ function wireImages(root = document) {
 
 function renderStatic() {
   $$('a[data-link]').forEach((a) => a.setAttribute('href', link(a.getAttribute('href'))));
-  $$('[data-mark="header"]').forEach((el) => (el.innerHTML = markHTML()));
-  $$('[data-mark="hero"]').forEach((el) => (el.innerHTML = `${markHTML()}<span class="wordmark reveal-after" aria-hidden="true">${esc(site.name)}</span>`));
+  renderMarks();
   $$('[data-bind]').forEach((el) => (el.textContent = site[el.dataset.bind]));
 
   const email = $('[data-footer-email]');
@@ -552,6 +561,8 @@ async function reveal() {
   // Start only once fonts are in and the page has painted, so nothing reflows or stutters mid-reveal.
   await Promise.race([document.fonts?.ready, wait(900)]);
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // A background tab can hold rAF past the 3s failsafe; if the page is already showing, don't replay.
+  if (!html.classList.contains('revealing')) return done();
   mark?.classList.add('play');
   setTimeout(() => html.classList.remove('revealing'), 820);
   setTimeout(done, 1100);
@@ -561,6 +572,10 @@ async function reveal() {
 /* ---------------- Boot ---------------- */
 
 window.CW = {
+  setMarkMode(mode) {
+    html.dataset.mark = mode;
+    renderMarks();
+  },
   REVIEW,
   site,
   pieces,
