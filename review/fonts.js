@@ -1,7 +1,7 @@
 // Font switcher (review only): lets Casey try heading, logo and body fonts on the live draft.
 // The choice is kept in this browser; once he settles, the winner goes into site.css as the default.
 
-const KEY = 'cw-review-fonts-v1';
+const KEY = 'cw-review-fonts-v2'; // v2: new defaults (Casey's pick); older saved picks are ignored
 const HINT_KEY = 'cw-review-fonts-hint-v1';
 const html = document.documentElement;
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
