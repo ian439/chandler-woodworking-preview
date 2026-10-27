@@ -6,19 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Chandler Woodworking</title>
   <meta name="description" content="Furniture made to commission in Santa Cruz, California.">
-  <meta name="theme-color" content="#EDEBE5">
-  <meta name="color-scheme" content="light only">
+  <meta name="theme-color" content="#1E1A17">
+  <meta name="color-scheme" content="dark only">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..500&family=Crimson+Pro:wght@400..700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..500&family=Crimson+Pro:wght@200..700&display=swap">
   <link rel="stylesheet" href="css/site.css">
   <script>
     // Hide everything but the logo until the first-load reveal runs (failsafe after 3s).
     var h = document.documentElement, base = new URL(document.baseURI).pathname.replace(/\/$/, '');
     var p = location.pathname.slice(base.length).replace(/\/+$/, '');
     var onWork = p === '' || p.indexOf('/work') === 0;
-    h.setAttribute('data-page', onWork ? 'work' : p === '/studio' ? 'studio' : 'commissions');
+    h.setAttribute('data-page', onWork ? 'work' : p === '/gallery' ? 'studio' : 'commissions');
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       h.setAttribute('data-reveal', onWork ? 'hero' : 'header');
       h.classList.add('revealing');
@@ -37,9 +37,9 @@
   <header class="site-header">
     <a class="header-mark tap" href="/" data-link aria-label="Chandler Woodworking, home"><span data-mark="header"></span></a>
     <nav class="nav-desktop" aria-label="Main">
-      <a href="/" data-link data-nav="work">Work</a>
-      <a href="/studio" data-link data-nav="studio">Studio</a>
-      <a href="/commissions" data-link data-nav="commissions">Commissions</a>
+      <a href="/" data-link data-nav="work">Home</a>
+      <a href="/gallery" data-link data-nav="studio">Gallery</a>
+      <a href="/contact" data-link data-nav="commissions">Contact</a>
       <span class="nav-ind" aria-hidden="true"></span>
     </nav>
   </header>
@@ -47,11 +47,16 @@
   <main id="main" tabindex="-1">
     <!-- WORK -->
     <section class="page" data-page="work" hidden>
-      <div class="hero reg-box">
-        <span class="rx tl"></span><span class="rx tr"></span><span class="rx bl"></span><span class="rx br"></span>
+      <div class="hero">
+        <div class="hero-photo frame" data-hero-photo></div>
+        <span class="hero-wash" aria-hidden="true"></span>
         <div class="hero-mark" data-mark="hero"></div>
         <h1 class="sr-only" data-bind="name"></h1>
+        <button class="scroll-cue tap reveal-after" type="button" data-scroll-cue aria-label="Scroll to the work">
+          <svg viewBox="0 0 24 13" aria-hidden="true"><path d="M12 13 0 0h24z"/></svg>
+        </button>
       </div>
+      <p class="intro" data-intro data-rise></p>
       <ol class="sequence" data-sequence></ol>
     </section>
 
@@ -60,7 +65,7 @@
       <div class="wrap studio-lead" data-studio-lead></div>
       <div class="wrap studio-top">
         <div class="studio-bio">
-          <h1 class="sr-only">Studio</h1>
+          <h1 class="sr-only">Gallery</h1>
           <div class="bio-text" data-rid="bio" data-studio-bio></div>
         </div>
         <figure data-studio-photo></figure>
@@ -83,7 +88,7 @@
         <div class="commission-photo" data-aside-photo></div>
 
         <div class="form-col">
-          <h1 class="sr-only">Commissions</h1>
+          <h1 class="sr-only">Contact</h1>
           <form class="inquiry" data-form novalidate>
             <div class="field">
               <label class="idea-label" for="f-desc">Your idea</label>
@@ -131,15 +136,14 @@
   <footer class="site-footer">
     <div class="wrap footer-row">
       <span class="foot-item"><a class="tap" data-footer-email data-rid="email"></a></span>
-      <span class="foot-item"><a class="tap" data-footer-ig data-rid="instagram" target="_blank" rel="noopener"></a></span>
       <span class="foot-item"><span data-bind="location" data-rid="location"></span></span>
     </div>
   </footer>
 
   <nav class="tabbar" aria-label="Main">
-    <a href="/" data-link data-nav="work" class="tap">Work</a>
-    <a href="/studio" data-link data-nav="studio" class="tap">Studio</a>
-    <a href="/commissions" data-link data-nav="commissions" class="tap">Commissions</a>
+    <a href="/" data-link data-nav="work" class="tap">Home</a>
+    <a href="/gallery" data-link data-nav="studio" class="tap">Gallery</a>
+    <a href="/contact" data-link data-nav="commissions" class="tap">Contact</a>
   </nav>
 
   <div class="piece-layer" data-piece-layer hidden></div>

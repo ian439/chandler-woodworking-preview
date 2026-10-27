@@ -1,4 +1,4 @@
-import { site, pieces, studio, commissions } from './content.js';
+import { site, home, pieces, studio, commissions } from './content.js';
 import { MARK_PATH } from './mark-path.js';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
@@ -190,16 +190,23 @@ function renderStatic() {
   const email = $('[data-footer-email]');
   email.href = `mailto:${site.email}`;
   email.textContent = site.email;
-  const ig = $('[data-footer-ig]');
-  ig.href = site.instagram.url;
-  ig.textContent = 'Instagram';
+
+  // Landing photo: loads first, so no lazy loading. Decorative (the mark over it carries the name).
+  const hp = home.hero;
+  const heroPhoto = $('[data-hero-photo]');
+  heroPhoto.dataset.rid = hp.rid;
+  heroPhoto.innerHTML = `<img src="${link(hp.src)}" alt="${esc(hp.alt)}" fetchpriority="high" decoding="async" style="object-position:${hp.pos || '50% 50%'}">`;
+  $('[data-intro]').textContent = home.line;
+  $('[data-scroll-cue]').addEventListener('click', () =>
+    $('[data-intro]').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' })
+  );
 
   // Work sequence
   $('[data-sequence]').innerHTML = pieces
     .map((p, i) => {
       const [hero, ...rest] = visiblePhotos(p.photos).filter((ph) => !ph.missing);
       const details = rest.slice(0, 2);
-      return `<li class="piece" id="${p.slug}">
+      return `<li class="piece" id="${p.slug}" data-rise>
         <a class="piece-link" href="${link(`/work/${p.slug}`)}" data-link data-piece="${p.slug}" aria-label="${esc(p.title)}, No. ${p.no}. Open details">
           ${mediaHTML(hero, isMobile() ? 'r-45' : 'r-32', p.dims)}
           ${details.length === 2 ? `<div class="details">${details.map((ph) => mediaHTML(ph, 'r-45')).join('')}</div>` : ''}
@@ -237,6 +244,7 @@ function renderStatic() {
 
   wireImages();
   wireHoverDims(document);
+  wireReveals();
 }
 
 function wireHoverDims(root) {
@@ -256,8 +264,37 @@ mqMobile.addEventListener('change', () => {
     f.classList.toggle('r-32', !isMobile());
     f.classList.toggle('r-45', isMobile());
   });
-  if (openSlug) closePiece({ animate: false }).then(() => history.replaceState({}, '', '/'));
+  if (openSlug) {
+    const slug = openSlug;
+    closePiece({ animate: false }).then(() => {
+      history.replaceState({}, '', link('/'));
+      pieceMedia(slug)?.scrollIntoView({ block: 'center' }); // the crops just changed height; re-anchor on the piece
+    });
+  }
 });
+
+/* ---------------- Scroll reveals ---------------- */
+
+// The page settles in as you go down: the intro line and each piece fade up once, and a piece's dimension
+// lines draw in when most of its photo is on screen (on desktop; phones hide them). Nothing moves on the hero.
+const revealIO = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    revealIO.unobserve(e.target);
+  });
+}, { rootMargin: '0px 0px -12% 0px' });
+const measureIO = new IntersectionObserver((entries) => {
+  entries.forEach((e) => {
+    if (!e.isIntersecting) return;
+    e.target.closest('.piece-link')?.classList.add('measured');
+    measureIO.unobserve(e.target);
+  });
+}, { threshold: .6 });
+function wireReveals() {
+  $$('[data-rise]').forEach((el) => (reduced() ? el.classList.add('in') : revealIO.observe(el)));
+  $$('.piece-link > .media').forEach((m) => (reduced() ? m.parentElement.classList.add('measured') : measureIO.observe(m)));
+}
 
 /* ---------------- Nav ---------------- */
 
@@ -287,14 +324,14 @@ document.fonts?.addEventListener('loadingdone', () => positionNav(false));
 
 /* ---------------- Routing ---------------- */
 
-const TITLES = { work: site.name, studio: `Studio · ${site.name}`, commissions: `Commissions · ${site.name}` };
+const TITLES = { work: site.name, studio: `Gallery · ${site.name}`, commissions: `Contact · ${site.name}` };
 let currentPage = null;
 let openSlug = null;
 
 function parse(pathname) {
   const path = pathname.replace(/\/+$/, '') || '/';
-  if (path === '/studio') return { page: 'studio' };
-  if (path === '/commissions') return { page: 'commissions' };
+  if (path === '/gallery') return { page: 'studio' };
+  if (path === '/contact') return { page: 'commissions' };
   const m = path.match(/^\/work\/([^/]+)$/);
   if (m && pieces.some((p) => p.slug === m[1])) return { page: 'work', piece: m[1] };
   return { page: 'work' };
@@ -310,14 +347,15 @@ function showPage(page) {
   fitMarks(); // the hero may have been hidden while the face or size changed; fit before it paints
 }
 
-async function switchPage(page, animate) {
+// `y` is where to land: 0 for a new visit, the saved position when going back or forward.
+async function switchPage(page, animate, y = 0) {
   if (!animate || reduced()) {
     showPage(page);
-    scrollTo(0, 0);
+    scrollTo(0, y);
     return;
   }
   if (canVT()) {
-    const t = document.startViewTransition(() => { showPage(page); scrollTo(0, 0); });
+    const t = document.startViewTransition(() => { showPage(page); scrollTo(0, y); });
     await settled(t);
   } else {
     const main = $('#main');
@@ -325,7 +363,7 @@ async function switchPage(page, animate) {
     main.style.opacity = '0';
     await wait(100);
     showPage(page);
-    scrollTo(0, 0);
+    scrollTo(0, y);
     main.style.opacity = '1';
     await wait(100);
     main.style.transition = main.style.opacity = '';
@@ -334,27 +372,29 @@ async function switchPage(page, animate) {
 }
 
 let applying = Promise.resolve();
-function apply(animate) {
-  applying = applying.then(() => applyNow(animate)).catch((e) => console.error(e));
+function apply(animate, y) {
+  applying = applying.then(() => applyNow(animate, y)).catch((e) => console.error(e));
   return applying;
 }
 
-async function applyNow(animate) {
+async function applyNow(animate, y) {
   const r = parse(location.pathname.slice(BASE.length) || '/');
   if (openSlug && r.piece !== openSlug) await closePiece({ animate: animate && r.page === 'work' });
-  if (r.page !== currentPage) await switchPage(r.page, animate);
+  if (r.page !== currentPage) await switchPage(r.page, animate, y || 0);
   if (r.page === 'commissions') prefillFromQuery();
   if (r.piece && r.piece !== openSlug) {
-    if (!animate) $(`#${r.piece}`)?.scrollIntoView({ block: 'center' });
+    if (!animate) pieceMedia(r.piece)?.scrollIntoView({ block: 'center' });
     await openPiece(r.piece, { animate });
   }
 }
 
-// `route` is an app path like '/studio' or '/work/bath-vanity', without the base.
+// `route` is an app path like '/gallery' or '/work/bath-vanity', without the base.
 function navigate(route, { replace = false, state = {} } = {}) {
   const url = new URL(link(route), location.origin);
   const target = url.pathname + url.search;
   if (target !== location.pathname + location.search) {
+    // Remember where this page was scrolled to, so Back returns there.
+    if (!replace) history.replaceState({ ...history.state, y: scrollY }, '', location.pathname + location.search);
     history[replace ? 'replaceState' : 'pushState'](state, '', target);
   } else if (!openSlug) {
     scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
@@ -369,7 +409,7 @@ document.addEventListener('click', (e) => {
   const u = new URL(a.href);
   navigate(u.pathname.slice(BASE.length) + u.search || '/', { state: a.dataset.piece ? { fromSeq: true } : {} });
 });
-addEventListener('popstate', () => apply(true));
+addEventListener('popstate', () => apply(true, history.state?.y));
 
 /* ---------------- Piece view ---------------- */
 
@@ -401,7 +441,7 @@ function pieceViewHTML(p, idx) {
         </dl>
         <p class="pv-story" data-rid="${k}-story">${esc(p.story)}</p>
         <div class="pv-actions">
-          <a class="btn-primary tap" href="${link(`/commissions?like=${p.slug}`)}" data-link>Start a commission like this</a>
+          <a class="btn-primary tap" href="${link(`/contact?like=${p.slug}`)}" data-link>Start a commission like this</a>
           <button class="pv-copy tap" type="button" data-share>${isMobile() && navigator.share ? 'Share this piece' : 'Copy link'}</button>
         </div>
       </div>
@@ -410,6 +450,7 @@ function pieceViewHTML(p, idx) {
 }
 
 function lock(on) { document.body.classList.toggle('locked', on); }
+const pieceMedia = (slug) => $(`#${slug} .piece-link > .media`);
 
 async function openPiece(slug, { animate }) {
   const idx = pieces.findIndex((p) => p.slug === slug);
@@ -704,6 +745,7 @@ window.CW = {
 
 renderStatic();
 if (!history.state) history.replaceState({}, '', location.pathname + location.search);
+history.scrollRestoration = 'manual'; // the router restores scroll itself (see navigate / popstate)
 apply(false).then(() => {
   positionNav(false);
   reveal();

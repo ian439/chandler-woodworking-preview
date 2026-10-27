@@ -1,67 +1,18 @@
-/* Review layer — only shipped when REVIEW_MODE is on. Chalk red lives here and nowhere else. */
+/* Review layer (font switcher) — only shipped when REVIEW_MODE is on. Chalk red lives here and nowhere else. */
 
-:root { --chalk: #A8452E; --dim: rgba(42, 36, 32, .45); }
+:root { --chalk: #A8452E; --dim: rgba(0, 0, 0, .55); }
 
-/* ---------- Notes on the page ----------
-   The page stays exactly as it will look live. Each note is a small chalk dot; hover or tap it to read. */
-.rv-host { position: relative; }
-.rv-pin {
-  position: absolute; z-index: 4; width: 10px; height: 10px; border-radius: 50%;
-  background: var(--chalk); box-shadow: 0 0 0 2px var(--birch); cursor: pointer;
-  font-style: normal; text-decoration: none; text-transform: none; letter-spacing: 0;
-}
-.rv-pin::before { content: ''; position: absolute; inset: -12px; } /* comfortable touch target */
-.rv-host > .rv-pin { left: -18px; top: .5em; }
-.rv-host > .rv-pin.right { left: auto; right: -18px; }
-.media > .rv-pin { top: 12px; left: 12px; }
-.rv-bubble {
-  position: absolute; top: calc(100% + 10px); left: -8px; display: none;
-  width: max-content; max-width: min(260px, 70vw);
-  font-family: var(--sans); font-size: 14px; font-stretch: 100%; font-weight: 500; line-height: 1.4; text-align: left; white-space: normal;
-  color: var(--chalk); background: var(--birch);
-  border: 1px solid var(--sawdust); border-top: 2px solid var(--chalk); padding: 8px 10px;
-}
-.rv-pin.flip .rv-bubble { left: auto; right: -8px; }
-.rv-pin:hover .rv-bubble, .rv-pin:focus-visible .rv-bubble, .rv-pin.open .rv-bubble { display: block; }
-.rv-pin:focus-visible { outline: 1.5px solid var(--steel); outline-offset: 3px; }
-html.rv-off .rv-pin { display: none; }
-
-/* ---------- Notes button ---------- */
-.rv-notes { position: fixed; left: 24px; bottom: 24px; z-index: 70; }
-.rv-notes-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: var(--walnut); color: var(--birch); border-radius: 999px;
-  padding: 10px 16px; font-size: 14px; font-stretch: 112%; font-weight: 500;
-}
+/* Chalk dot on the Fonts tab. */
 .rv-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--chalk); box-shadow: 0 0 0 2px var(--birch); }
-.rv-menu {
-  position: absolute; left: 0; bottom: calc(100% + 8px); min-width: 220px;
-  background: var(--birch); border: 1px solid var(--sawdust); border-top: 2px solid var(--chalk); padding: 6px;
-}
-.rv-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; font-size: 14px; }
-.rv-menu button:hover { background: var(--sawdust); }
-.rv-menu .rv-hint { padding: 8px 12px 10px; font-size: 12px; color: var(--driftwood); border-bottom: 1px solid var(--sawdust); margin-bottom: 4px; }
 
 @media (max-width: 767px) {
-  .rv-notes { left: auto; right: 12px; bottom: auto; top: calc(14px + var(--safe-t)); }
-  .rv-notes-btn { padding: 7px 12px; gap: 8px; font-size: 13px; }
-  .rv-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); border-top: 2px solid var(--chalk); }
-  body.locked .rv-notes { display: none; } /* the open piece sheet's close button sits right under it */
   body.locked .ff-dock { display: none; } /* keep the open piece sheet clear */
-}
-
-@media (max-width: 767px) {
-  .rv-host > .rv-pin { left: -13px; }
-  .rv-host > .rv-pin.right { right: -13px; }
-  /* The 16px gutter ends 3px past the dot; a touch area reaching further would widen the page. */
-  .rv-host > .rv-pin.right::before { right: -3px; }
 }
 
 /* ---------- Font switcher ---------- */
 /* The tab docks to the right edge. "Aa" is set in whatever heading face is picked, so the tab previews the choice. */
 .ff-dock { position: fixed; right: 0; top: 50%; z-index: 72; transform: translateY(-50%); transition: opacity 400ms var(--ease); }
-html.revealing .ff-dock, html.revealing .rv-notes { opacity: 0; } /* held back with the rest of the page until the logo reveal has played */
-.rv-notes { transition: opacity 400ms var(--ease); }
+html.revealing .ff-dock { opacity: 0; } /* held back with the rest of the page until the logo reveal has played */
 .ff-tab {
   display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 46px;
   background: var(--walnut); color: var(--birch); border-radius: 8px 0 0 8px;
@@ -111,12 +62,11 @@ html.revealing .ff-dock, html.revealing .rv-notes { opacity: 0; } /* held back w
   transition: border-color 150ms var(--ease), background-color 150ms var(--ease);
 }
 .ff-opt:hover { border-color: var(--driftwood); }
-.ff-opt[aria-pressed="true"] { border-color: var(--walnut); background: #F4F2EE; box-shadow: inset 3px 0 0 var(--walnut); }
+.ff-opt[aria-pressed="true"] { border-color: var(--walnut); background: #2C2622; box-shadow: inset 3px 0 0 var(--walnut); }
 .ff-sample { display: block; line-height: 1.15; color: var(--walnut); overflow-wrap: anywhere; } /* wraps on a 320px panel instead of scrolling it sideways */
 .ff-name { display: block; margin-top: 6px; font-size: 13px; color: var(--walnut); }
 .ff-small .ff-name { margin-top: 0; font-size: 14px; }
 .ff-note { color: var(--driftwood); }
-html.rv-off .ff-dock { display: none; }
 
 @media (max-width: 767px) {
   /* Compact, and parked above the Commissions send bar so it never sits over the tab bar or the Send button. */

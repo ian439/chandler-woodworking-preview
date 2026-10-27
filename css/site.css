@@ -1,20 +1,23 @@
-/* Chandler Woodworking — site styles. Light only. No blue, no chalk red here. */
+/* Chandler Woodworking — site styles. Dark only. No blue, no chalk red here.
+   Token names are the original wood names; on the dark theme --birch is the page, --walnut the ink. */
 
 :root {
-  --birch: #EDEBE5;
-  --walnut: #2A2420;
-  --driftwood: #7A7168;
-  --sawdust: #D8D2C7;
-  --oak: #B89A6E;
-  --steel: #4A4E50;
+  --birch: #1E1A17;     /* page: warm charcoal, near black but not black */
+  --walnut: #ECE6DC;    /* ink */
+  --driftwood: #A59A8D; /* muted ink */
+  --sawdust: #3B342D;   /* rules, empty frames */
+  --oak: #C2A274;       /* accent */
+  --steel: #B4B8BA;     /* dimension lines, focus */
+  --on-oak: #1A1612;    /* text on the oak button */
 
   /* Heading / wordmark / logo face. The review build's font switcher overrides these five. */
   --display: 'Crimson Pro', Georgia, serif;
-  --display-weight: 500;
+  /* Casey's pick: Crimson Pro extra light, 110% size, wide spacing. */
+  --display-weight: 200;
   --display-style: normal;
   --display-fvs: normal;
-  --display-scale: 1.14;      /* serif faces read small next to Archivo; titles scale by this */
-  --display-caps-track: .16em;
+  --display-scale: 1.254;     /* Crimson's optical 1.14 × 110%; serif faces read small next to Archivo */
+  --display-caps-track: .272em; /* Crimson's .16em × 1.7 (wide) */
   --sans: 'Archivo', system-ui, -apple-system, sans-serif;
 
   --fs-label: 14px;
@@ -36,7 +39,7 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 @media (max-width: 767px) {
@@ -128,6 +131,10 @@ img { display: block; max-width: 100%; }
 /* One mark per screen: on Work the centred hero mark stands in for the header mark. */
 html[data-page="work"] .header-mark { display: none; }
 html[data-page="work"] .nav-desktop { margin-top: 0; }
+/* Home: the header floats over the landing photo, white with a soft shadow instead of a bar. */
+html[data-page="work"] .site-header { position: absolute; top: 0; left: 0; right: 0; z-index: 5; }
+html[data-page="work"] .nav-desktop a { color: rgba(255, 255, 255, .78); text-shadow: 0 1px 14px rgba(0, 0, 0, .6); }
+html[data-page="work"] .nav-desktop a:hover, html[data-page="work"] .nav-desktop a[aria-current="page"] { color: #fff; }
 .header-mark .mark { width: 56px; }
 .header-mark .mark.is-type { font-size: calc(34px * var(--display-scale)); }
 .nav-desktop { position: relative; display: flex; justify-content: center; gap: 40px; margin-top: 16px; }
@@ -196,11 +203,37 @@ html.revealing .tabbar { opacity: 0; }
 .header-mark, .site-header > nav, .reveal-after, .sequence, .page, .site-footer, .tabbar { transition: opacity 400ms var(--ease); }
 
 /* ---------- Work ---------- */
+/* Landing: full-bleed photo with the lockup centred over it. Still — the motion lives further down. */
 .hero {
-  max-width: var(--max); margin: 32px auto 0; width: calc(100% - 2 * var(--gutter));
-  min-height: 38vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 56px 24px;
+  position: relative; height: 100svh; min-height: 480px; /* no overflow clip: the wash overhangs to hide the seam */
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 0 24px; background: var(--birch);
 }
+.hero-photo.frame { position: absolute; inset: 0; background: transparent; }
+.hero-photo img { transition: opacity 1200ms var(--ease); }
+/* Wash: a shade at the top for the nav, a soft vignette behind the lockup, and a long eased fade into the
+   page colour (rgb of --birch — keep in sync) over the bottom half, so the photo melts into the page with no edge.
+   It overhangs the hero by a few pixels (solid page colour) so no sub-pixel seam can show. */
+.hero-wash {
+  position: absolute; inset: 0 0 -3px; pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(30, 26, 23, 0) 45%, rgba(30, 26, 23, .03) 51%, rgba(30, 26, 23, .09) 57%, rgba(30, 26, 23, .18) 63%,
+      rgba(30, 26, 23, .3) 69%, rgba(30, 26, 23, .45) 75%, rgba(30, 26, 23, .61) 81%, rgba(30, 26, 23, .76) 86%,
+      rgba(30, 26, 23, .88) 91%, rgba(30, 26, 23, .96) 95%, rgb(30, 26, 23) 98.5%),
+    radial-gradient(70% 55% at 50% 46%, rgba(8, 7, 6, .42) 0%, rgba(8, 7, 6, .22) 60%, rgba(8, 7, 6, 0) 100%),
+    linear-gradient(180deg, rgba(8, 7, 6, .5) 0%, rgba(8, 7, 6, .16) 22%, rgba(8, 7, 6, 0) 40%);
+}
+.hero-mark { position: relative; z-index: 1; filter: drop-shadow(0 4px 28px rgba(0, 0, 0, .5)); }
+.hero .mark path { fill: #fff; }
+.hero .mark-type, .hero .wordmark { color: #fff; }
+.hero .mark .kerf { background: #fff; }
+.scroll-cue {
+  position: absolute; z-index: 1; left: 50%; bottom: 32px; translate: -50% 0; padding: 12px;
+  color: rgba(236, 230, 220, .55); transition: color var(--t-feedback) var(--ease), opacity 400ms var(--ease);
+}
+.scroll-cue:hover { color: var(--walnut); }
+.scroll-cue svg { display: block; width: 20px; height: 11px; fill: currentColor; }
 /* Stacked lockup: small mark centred over the wordmark. Everything is in em of the wordmark size,
    so proportions hold at every width. */
 .hero-mark { display: flex; flex-direction: column; align-items: center; font-size: calc(clamp(17px, 1.9vw, 24px) * var(--fit, 1)); } /* site.js sets --fit < 1 when the lockup would be wider than the hero */
@@ -215,7 +248,24 @@ html.revealing .tabbar { opacity: 0; }
   translate: calc(var(--ink, 0) * 1em) 0; /* site.js: centres the ink itself, past side bearings and italic overhang */
 }
 
-.sequence { max-width: calc(var(--max) + 2 * var(--gutter)); margin: 48px auto 0; padding: 0 var(--gutter); }
+/* Intro line under the photo, with a short oak scribe line that draws in above it. */
+.intro {
+  max-width: 24ch; margin: 64px auto 0; padding: 0 var(--gutter); text-align: center; scroll-margin-top: 96px;
+  font-family: var(--display); font-weight: var(--display-weight); font-style: var(--display-style);
+  font-variation-settings: var(--display-fvs); font-synthesis: none;
+  font-size: calc(var(--fs-title) * var(--display-scale) * 1.15); line-height: 1.25;
+}
+.intro::before {
+  content: ''; display: block; width: 40px; height: 1px; margin: 0 auto 28px; background: var(--oak);
+  transform: scaleX(0); transition: transform 1100ms var(--ease) 150ms;
+}
+.intro.in::before { transform: none; }
+
+/* Scroll reveals: a gentle fade up, once. site.js adds .in as each element comes into view. */
+[data-rise] { opacity: 0; transform: translateY(20px); transition: opacity 1000ms var(--ease), transform 1000ms var(--ease); }
+[data-rise].in { opacity: 1; transform: none; }
+
+.sequence { max-width: calc(var(--max) + 2 * var(--gutter)); margin: 112px auto 0; scroll-margin-top: 48px; padding: 0 var(--gutter); }
 .piece { display: flex; flex-direction: column; }
 .details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px var(--rail) 0; }
 .piece + .piece { margin-top: var(--piece-gap); }
@@ -261,11 +311,16 @@ html.revealing .tabbar { opacity: 0; }
 .dims .tick.a { transition: opacity 0ms linear 0ms; }
 .dims .tick.b { transition: opacity 0ms linear 0ms; }
 .dims .dim-label { transition: opacity var(--t-feedback) var(--ease); }
-.is-dim .dims .bar { transform: none; }
-.is-dim .dims .tick.a { opacity: 1; }
+/* Drawn on hover, or once (slower) when the piece is first measured on the way down the page. */
+.is-dim .dims .bar, .measured .dims .bar { transform: none; }
+.is-dim .dims .tick.a, .measured .dims .tick.a { opacity: 1; }
 .is-dim .dims .tick.b { opacity: 1; transition-delay: var(--t-dim); }
-.is-dim .dims .dim-label { opacity: 1; transition-delay: 140ms; }
+.is-dim .dims .dim-label, .measured .dims .dim-label { opacity: 1; transition-delay: 140ms; }
 .is-dim .dims .dim-h .bar { transition-delay: 60ms; }
+.measured .dims .bar { transition-duration: 900ms; transition-delay: 300ms; }
+.measured .dims .dim-h .bar { transition-delay: 600ms; }
+.measured .dims .tick.b { opacity: 1; transition-delay: 1200ms; }
+.measured .dims .dim-label { transition-duration: 600ms; transition-delay: 1000ms; }
 
 /* ---------- Piece view: desktop overlay ---------- */
 .piece-layer { position: fixed; inset: 0; z-index: 50; }
@@ -306,11 +361,11 @@ html.revealing .tabbar { opacity: 0; }
 
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--oak); color: var(--walnut); font-weight: 500;
+  background: var(--oak); color: var(--on-oak); font-weight: 500;
   padding: 14px 28px; border-radius: 2px; min-height: 48px;
   transition: background-color var(--t-feedback) var(--ease), opacity var(--t-feedback) var(--ease);
 }
-.btn-primary:hover { background: #AD8E61; }
+.btn-primary:hover { background: #CFB084; }
 .btn-primary[disabled] { opacity: .7; cursor: default; }
 
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; animation-timing-function: var(--ease); }
@@ -371,7 +426,7 @@ input, select, textarea {
 textarea { resize: vertical; border: 1px solid var(--sawdust); padding: 12px; }
 select {
   cursor: pointer; padding-right: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%234A4E50'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23B4B8BA'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 4px center;
 }
 input:hover, select:hover, textarea:hover { border-color: var(--driftwood); }
@@ -394,11 +449,19 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 .next-list .num { color: var(--driftwood); }
 
 /* ---------- Footer ---------- */
-.site-footer { border-top: 1px solid var(--sawdust); margin-top: var(--piece-gap); padding: 24px 0 32px; }
-.footer-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 40px; font-size: var(--fs-label); font-stretch: 125%; color: var(--driftwood); }
+.site-footer { border-top: 1px solid var(--sawdust); margin-top: var(--piece-gap); padding: 48px 0 56px; }
+.footer-row { display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: 12px 48px; color: var(--walnut); }
 .foot-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.footer-row a { transition: color var(--t-feedback) var(--ease); }
-.footer-row a:hover { color: var(--walnut); }
+/* The email is the footer's one call to action: set in the heading face, with an oak underline. */
+.footer-row a {
+  font-family: var(--display); font-weight: var(--display-weight); font-style: var(--display-style);
+  font-variation-settings: var(--display-fvs); font-synthesis: none;
+  font-size: calc(var(--fs-lead) * var(--display-scale)); line-height: 1.2;
+  border-bottom: 1px solid var(--oak); padding-bottom: 2px;
+  transition: color var(--t-feedback) var(--ease), border-color var(--t-feedback) var(--ease);
+}
+.footer-row a:hover { color: var(--oak); }
+.footer-row [data-bind="location"] { font-size: var(--fs-body); font-stretch: 125%; letter-spacing: .04em; color: var(--driftwood); }
 
 /* ---------- Narrow desktop / tablet ---------- */
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -432,12 +495,14 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   }
   .tabbar a[aria-current="page"]::before { transform: none; }
 
-  .hero { margin-top: 8px; min-height: 0; padding: 56px 16px 48px; }
+  .hero { height: calc(100svh - var(--tabbar-h) - var(--safe-b)); min-height: 420px; padding: 0 16px; }
+  .scroll-cue { bottom: 20px; }
   .hero-mark { font-size: calc(17px * var(--fit, 1)); }
 
   .piece-link > .media { margin: 0; }
   .piece-link .dims { display: none; } /* the height line sits 24px outside the photo and would push the page wider than the screen */
-  .sequence { margin-top: 24px; }
+  .intro { margin-top: 40px; }
+  .sequence { margin-top: 72px; }
   .details { margin: 8px 0 0; gap: 8px; }
   .piece { min-height: 0; }
   .caption { margin: 16px 0 0; grid-template-columns: 40px 1fr; row-gap: 4px; column-gap: 0; }
@@ -468,11 +533,11 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   .send-bar .btn-primary { width: 100%; }
   .next-note { margin-top: 40px; }
 
-  .site-footer { padding-bottom: 32px; }
+  .site-footer { padding: 40px 0 40px; }
   .footer-row { flex-direction: column; align-items: center; gap: 12px; }
 
   /* Piece view: bottom sheet */
-  .pv-backdrop { background: rgba(42, 36, 32, .4); opacity: 0; transition: opacity var(--t-open) var(--ease); }
+  .pv-backdrop { background: rgba(0, 0, 0, .6); opacity: 0; transition: opacity var(--t-open) var(--ease); }
   .pv {
     inset: auto 0 0 0; height: calc(100svh - 32px - var(--safe-t)); border-radius: 14px 14px 0 0;
     transform: translateY(100%); transition: transform var(--t-open) var(--ease);
@@ -505,4 +570,5 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  [data-rise] { opacity: 1; transform: none; }
 }

@@ -4,10 +4,16 @@
 export const site = {
   name: 'Chandler Woodworking',
   email: 'studio@chandlerwoodworking.com',
-  instagram: { handle: 'casey.chandler.11', url: 'https://www.instagram.com/casey.chandler.11/' },
   location: 'Santa Cruz',
   // 'type' = CW set in the heading font; 'drawn' = Casey's original drawn mark (CW.svg).
   mark: 'type',
+};
+
+// Home landing photo: full-bleed behind the centred mark. Wants a wide, dark-ish shot (landscape for desktop).
+export const home = {
+  hero: { rid: 'hero-photo', src: '/img/vanity-baskets.jpg', alt: '', pos: '50% 58%' },
+  // One line under the landing photo, before the work.
+  line: 'Furniture made to commission in Santa Cruz.',
 };
 
 // Photo entries: { src, alt, pos (object-position), zoom? } or { missing: true }.

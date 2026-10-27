@@ -50,7 +50,8 @@ const LOOKS = [
   { id: 'minimal', name: 'Minimal', set: { weight: 300, italic: false, size: 90, spacing: 'wide' } },
   { id: 'thin', name: 'Thin', set: { weight: 100, italic: false, size: 105, spacing: 'wide' } },
 ];
-const DEFAULTS = { display: 'crimson', body: 'archivo', mark: 'type', ...LOOKS[0].set };
+// Matches the site.css defaults (Casey's pick): Crimson Pro extra light, 110%, wide, typeset CW, Archivo.
+const DEFAULTS = { display: 'crimson', body: 'archivo', mark: 'type', weight: 200, italic: false, size: 110, spacing: 'wide' };
 
 const weightsOf = (d) => d.weights || Object.keys(WEIGHT_NAMES).map(Number).filter((w) => w >= d.wmin && w <= d.wmax);
 // The weight actually used: the wanted one, snapped to the nearest weight this face has.
