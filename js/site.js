@@ -1,5 +1,5 @@
-import { site, home, pieces, commissions } from './content.js?v=10c10e68f8';
-import { MARK_PATH } from './mark-path.js?v=10c10e68f8';
+import { site, home, pieces, commissions } from './content.js?v=bdb65c433f';
+import { MARK_PATH } from './mark-path.js?v=bdb65c433f';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
@@ -469,7 +469,10 @@ function pieceViewHTML(p, idx) {
         <div class="pv-photos" data-gallery>
           ${photos.map((ph, i) => `<div class="slide">${mediaHTML(ph, 'r-45', i === 0 ? p.dims : null)}</div>`).join('')}
         </div>
-        <p class="pv-counter num" data-counter aria-live="polite">1 of ${photos.length}</p>
+        ${photos.length > 1 ? `<button class="pv-more tap" type="button" data-more>More photos<svg viewBox="0 0 24 13" aria-hidden="true"><path d="M12 13 0 0h24z"/></svg></button>` : ''}
+        <p class="pv-counter num"><span data-counter aria-live="polite">1 of ${photos.length}</span>${
+          photos.length > 1 ? `<span class="pv-swipe" aria-hidden="true">Swipe<svg viewBox="0 0 24 13" aria-hidden="true"><path d="M12 13 0 0h24z"/></svg></span>` : ''
+        }</p>
       </div>
       <div class="pv-info">
         <p class="num">No. ${p.no}</p>
@@ -500,7 +503,7 @@ async function openPiece(slug, { animate }) {
   openSlug = slug;
   lastFocus = document.activeElement;
   layer.innerHTML = pieceViewHTML(p, idx);
-  layer.classList.remove('open');
+  layer.classList.remove('open', 'browsed');
   const pv = $('.pv', layer);
   const firstMedia = $('.slide .media', layer);
   const firstImg = $('.slide img', layer);
@@ -605,12 +608,29 @@ function wirePieceView(p) {
   const total = gallery.children.length;
   gallery.addEventListener('scroll', () => {
     if (!isMobile()) return;
-    const i = Math.round(gallery.scrollLeft / gallery.clientWidth);
+    const i = Math.round(gallery.scrollLeft / gallery.firstElementChild.offsetWidth);
     counter.textContent = `${Math.min(total, i + 1)} of ${total}`;
+    if (gallery.scrollLeft > 8) layer.classList.add('browsed');
   }, { passive: true });
 
-  // iPhone: drag the sheet down to close. A fast flick closes even if it has not travelled far.
+  // More photos below (desktop): the cue sits at the foot of the screen until the first scroll, and jumps to
+  // the second photo when clicked. On a window tall enough to show every photo it never appears.
   const pv = $('.pv', layer);
+  const more = $('[data-more]', layer);
+  if (more) {
+    const check = () => {
+      if (isMobile()) return; // phones get the swipe cue instead
+      if (pv.scrollTop > 48 || pv.scrollHeight <= pv.clientHeight + 4) layer.classList.add('browsed');
+    };
+    pv.addEventListener('scroll', check, { passive: true });
+    requestAnimationFrame(check);
+    more.addEventListener('click', () => {
+      const next = gallery.children[1];
+      pv.scrollTo({ top: next.offsetTop - 72, behavior: reduced() ? 'auto' : 'smooth' });
+    });
+  }
+
+  // iPhone: drag the sheet down to close. A fast flick closes even if it has not travelled far.
   const backdrop = $('.pv-backdrop', layer);
   let startX = 0, startY = 0, lastY = 0, lastT = 0, vel = 0, decided = false, dragging = false;
   pv.addEventListener('touchstart', (e) => {

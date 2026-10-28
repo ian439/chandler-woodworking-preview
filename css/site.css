@@ -366,6 +366,18 @@ html.revealing .tabbar { opacity: 0; }
 .pv-close i::before, .pv-close i::after { content: ''; position: absolute; left: 0; right: 0; top: 6.5px; height: 1px; background: currentColor; transform: rotate(45deg); }
 .pv-close i::after { transform: rotate(-45deg); }
 .pv-grab, .pv-counter { display: none; }
+/* "More photos" cue: pinned to the foot of the screen over the photo column, gone after the first scroll. */
+.pv-more {
+  position: sticky; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: fit-content; margin: -60px auto 0; padding: 8px 14px; translate: calc(var(--rail) / -2) 0;
+  font-size: var(--fs-label); font-stretch: 125%; color: var(--walnut);
+  background: rgba(30, 26, 23, .72); /* --birch */ border-radius: 999px;
+  transition: opacity var(--t-dim) var(--ease), color var(--t-feedback) var(--ease);
+}
+.pv-more svg, .pv-swipe svg { display: block; width: 12px; height: 7px; fill: currentColor; }
+.pv-more svg { animation: nudge 2.4s var(--ease) 1s infinite; }
+@keyframes nudge { 0%, 60%, 100% { transform: none; } 30% { transform: translateY(4px); } }
+.piece-layer.browsed .pv-more { opacity: 0; pointer-events: none; }
 
 .piece-layer.fading .pv { opacity: 0; }
 .piece-layer .pv { transition: opacity var(--t-state) var(--ease); }
@@ -551,8 +563,15 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
     scrollbar-width: none; overscroll-behavior-x: contain;
   }
   .pv-photos::-webkit-scrollbar { display: none; }
-  .pv-photos .slide { flex: 0 0 100%; scroll-snap-align: center; padding: 36px 40px 0 16px; }
-  .pv-counter { display: block; padding: 12px 16px 0; color: var(--driftwood); }
+  /* Each slide is a little narrower than the sheet, so the next photo peeks in at the right edge. */
+  .pv-photos .slide { flex: 0 0 calc(100% - 52px); scroll-snap-align: start; padding: 36px 0 0 16px; }
+  .pv-photos .slide:last-child { flex-basis: 100%; padding-right: 16px; }
+  .pv-photos .dims { display: none; }
+  .pv-more { display: none; }
+  .pv-counter { display: flex; align-items: center; gap: 12px; padding: 12px 16px 0; color: var(--driftwood); }
+  .pv-swipe { display: flex; align-items: center; gap: 6px; transition: opacity var(--t-dim) var(--ease); }
+  .pv-swipe svg { rotate: -90deg; }
+  .piece-layer.browsed .pv-swipe { opacity: 0; }
   .pv-info { position: static; height: auto; padding: 24px 16px 0; display: block; }
   .pv-actions .btn-primary { width: 100%; }
 }
