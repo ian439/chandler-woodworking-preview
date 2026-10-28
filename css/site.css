@@ -148,6 +148,17 @@ html[data-page="work"] .nav-desktop a:hover, html[data-page="work"] .nav-desktop
   transition: transform var(--t-state) var(--ease), width var(--t-state) var(--ease);
 }
 .tabbar { display: none; }
+/* Floating bar (desktop, set by site.js): the header pinned to the top, hidden above it until you scroll up,
+   then shown with only its nav row below the edge (--hdr-peek is the part kept above). */
+html.nav-float .site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding-bottom: 12px;
+  background: rgba(30, 26, 23, .9); /* --birch */
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--sawdust);
+  transform: translateY(-100%); transition: transform var(--t-dim) var(--ease);
+}
+html.nav-float.nav-show .site-header { transform: translateY(calc(-1 * var(--hdr-peek, 0px))); }
+html.nav-float:not([data-page="work"]) body { padding-top: var(--hdr-h); }
 
 /* ---------- Mark ---------- */
 /* The mark is two stacked copies of the logo, each clipped at the kerf (y 11.93 of 19),

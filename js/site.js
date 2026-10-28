@@ -1,5 +1,5 @@
-import { site, home, pieces, studio, commissions } from './content.js?v=7c3c4a410d';
-import { MARK_PATH } from './mark-path.js?v=7c3c4a410d';
+import { site, home, pieces, studio, commissions } from './content.js?v=c41614831c';
+import { MARK_PATH } from './mark-path.js?v=c41614831c';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
@@ -321,6 +321,49 @@ const navResize = new ResizeObserver(() => positionNav(false));
 navResize.observe($('.nav-desktop'));
 $$('.nav-desktop a').forEach((a) => navResize.observe(a));
 document.fonts?.addEventListener('loadingdone', () => positionNav(false));
+
+// Desktop: once the header has scrolled away it comes back as a fixed bar whenever you scroll up, and tucks
+// away again as you scroll down. The bar is the header itself, pinned and shifted up so only its nav row
+// shows. Off the home page the header is in the flow, so floating it swaps its height in as body padding
+// (the CSS reads --hdr-h) in the same frame, and nothing below moves. Phones have the tab bar instead.
+const header = $('.site-header');
+let lastY = scrollY;
+let navTicking = false;
+function updateFloat() {
+  navTicking = false;
+  const y = Math.max(0, scrollY);
+  const dy = y - lastY;
+  lastY = y;
+  const floating = html.classList.contains('nav-float');
+  if (isMobile() || openSlug) {
+    if (floating && isMobile()) html.classList.remove('nav-float', 'nav-show');
+    return;
+  }
+  const h = header.offsetHeight;
+  // How far the bar sits above the top edge: everything over the nav row, less a little breathing room.
+  const peek = Math.max(0, $('.nav-desktop').offsetTop - 14);
+  if (!floating) {
+    if (y <= h || dy >= 0) return;
+    // Scrolling up from below the header: float it, starting just above the top edge, then slide it in.
+    html.style.setProperty('--hdr-h', `${h}px`);
+    html.style.setProperty('--hdr-peek', `${peek}px`);
+    header.style.transition = 'none';
+    html.classList.add('nav-float');
+    header.offsetHeight; // commit the hidden position before the slide starts
+    header.style.transition = '';
+    html.classList.add('nav-show');
+    return;
+  }
+  // Back at the top, where the docked header lines up with the bar: hand back to it.
+  if (y <= peek) return html.classList.remove('nav-float', 'nav-show');
+  if (Math.abs(dy) < 4) return;
+  if (dy < 0) html.classList.add('nav-show');
+  else if (y > h) html.classList.remove('nav-show');
+}
+addEventListener('scroll', () => {
+  if (!navTicking) { navTicking = true; requestAnimationFrame(updateFloat); }
+}, { passive: true });
+mqMobile.addEventListener('change', updateFloat);
 
 /* ---------------- Routing ---------------- */
 
