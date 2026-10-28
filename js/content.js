@@ -55,26 +55,6 @@ export const pieces = [
   },
 ];
 
-export const studio = {
-  lead: { rid: 'studio-lead', src: '/img/vanity-arch.jpg', alt: 'Placeholder photo', pos: '50% 58%' },
-  bio: ['Furniture made to commission in a small Santa Cruz shop.'],
-  photo: { rid: 'studio-photo', src: '/img/vanity-arch.jpg', alt: 'Placeholder photo', pos: '45% 75%', zoom: 2.4 },
-  process: [
-    { name: 'Consult', time: '1 week' },
-    { name: 'Design', time: '2–3 weeks' },
-    { name: 'Build', time: '6–10 weeks' },
-    { name: 'Delivery', time: '1 week' },
-  ],
-  shop: [
-    { rid: 'shop1', src: '/img/vanity-arch.jpg', alt: 'Placeholder photo', pos: '40% 49%', zoom: 3 },
-    { rid: 'shop2', src: '/img/vanity-baskets.jpg', alt: 'Placeholder photo', pos: '62% 70%', zoom: 1.8 },
-    { rid: 'shop3', src: '/img/vanity-arch.jpg', alt: 'Placeholder photo', pos: '78% 58%', zoom: 2.5 },
-    { rid: 'shop4', src: '/img/vanity-arch.jpg', alt: 'Placeholder photo', pos: '20% 38%', zoom: 2.4 },
-    { rid: 'shop5', src: '/img/vanity-baskets.jpg', alt: 'Placeholder photo', pos: '30% 58%', zoom: 2.8 },
-    { rid: 'shop6', src: '/img/vanity-baskets.jpg', alt: 'Placeholder photo', pos: '28% 58%', zoom: 2 },
-  ],
-};
-
 export const commissions = {
   photo: { rid: 'form-photo', src: '/img/vanity-baskets.jpg', alt: 'Placeholder photo', pos: '40% 60%', zoom: 1.3 },
 };

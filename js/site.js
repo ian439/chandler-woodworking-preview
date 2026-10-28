@@ -1,5 +1,5 @@
-import { site, home, pieces, studio, commissions } from './content.js?v=c41614831c';
-import { MARK_PATH } from './mark-path.js?v=c41614831c';
+import { site, home, pieces, commissions } from './content.js?v=10c10e68f8';
+import { MARK_PATH } from './mark-path.js?v=10c10e68f8';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
@@ -224,23 +224,21 @@ function renderStatic() {
     })
     .join('');
 
-  // Studio
-  $('[data-studio-lead]').innerHTML = mediaHTML(studio.lead, 'r-21');
   $('[data-aside-photo]').innerHTML = mediaHTML(commissions.photo, 'r-45');
-  $('[data-studio-bio]').innerHTML = studio.bio.map((t) => `<p>${esc(t)}</p>`).join('');
-  $('[data-studio-photo]').outerHTML = `<figure class="studio-photo">${mediaHTML(studio.photo, 'r-45')}</figure>`;
-  $('[data-process]').innerHTML = studio.process
-    .map(
-      (s, i) => `<li class="step">
-        <span class="num">0${i + 1}</span>
-        <h3>${s.name}</h3>
-        <span class="time" data-rid="lead-${i + 1}">${s.time}</span>
-      </li>`
-    )
+
+  // Gallery: every piece as a tile, opening the same piece view as the sequence on Home.
+  $('[data-works]').innerHTML = pieces
+    .map((p) => {
+      const [cover] = visiblePhotos(p.photos).filter((ph) => !ph.missing);
+      return `<li data-rise>
+        <a class="work-tile" href="${link(`/work/${p.slug}`)}" data-link data-piece="${p.slug}" aria-label="${esc(p.title)}, ${p.year}. Open details">
+          ${mediaHTML(cover, 'r-45')}
+          <span class="work-title"><span class="title-u">${esc(p.title)}</span></span>
+          <span class="work-meta">${p.year} · ${esc(p.wood)}</span>
+        </a>
+      </li>`;
+    })
     .join('');
-  const shop = visiblePhotos(studio.shop);
-  if (!shop.length) $('.shop-wrap').remove();
-  else $('[data-shop]').innerHTML = shop.map((ph) => mediaHTML(ph, 'r-45')).join('');
 
   wireImages();
   wireHoverDims(document);
