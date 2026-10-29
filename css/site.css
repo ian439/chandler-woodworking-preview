@@ -229,11 +229,12 @@ html.revealing .tabbar { opacity: 0; }
 /* Wash: a shade at the top for the nav, a soft vignette behind the lockup, and a long eased fade into the
    page colour (rgb of --birch — keep in sync) over the bottom half, so the photo melts into the page with no edge.
    It overhangs the hero by a few pixels (solid page colour) so no sub-pixel seam can show. */
-/* Top fade: starts at exactly the page colour, which is also the theme-color Safari paints behind the status bar,
-   so the photo melts up into the browser chrome instead of meeting it at a hard line. Eased stops, like the bottom. */
+/* Top fade (phones only, --top-fade is 0 on desktop): starts at exactly the page colour, which is also the
+   theme-color Safari paints behind the status bar, so the photo melts up into the browser chrome instead of meeting
+   it at a hard line. Eased stops, like the bottom. */
 .hero-wash {
   position: absolute; inset: 0 0 -3px; pointer-events: none;
-  --top-fade: 22%;
+  --top-fade: 0%;
   background:
     linear-gradient(180deg,
       rgb(30, 26, 23) 0%, rgba(30, 26, 23, .93) calc(var(--top-fade) * .1), rgba(30, 26, 23, .8) calc(var(--top-fade) * .22),
