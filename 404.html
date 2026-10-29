@@ -12,13 +12,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..500&family=Crimson+Pro:wght@200..700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=bdb65c433f">
+  <link rel="stylesheet" href="css/site.css?v=a32874f3b6">
   <script>
     // Hide everything but the logo until the first-load reveal runs (failsafe after 3s).
     var h = document.documentElement, base = new URL(document.baseURI).pathname.replace(/\/$/, '');
     var p = location.pathname.slice(base.length).replace(/\/+$/, '');
-    var onWork = p === '' || p.indexOf('/work') === 0;
-    h.setAttribute('data-page', onWork ? 'work' : p === '/gallery' ? 'studio' : 'commissions');
+    var onWork = p === '';
+    h.setAttribute('data-page', onWork ? 'work' : p === '/gallery' || p.indexOf('/work/') === 0 ? 'studio' : p === '/about' ? 'about' : 'commissions');
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       h.setAttribute('data-reveal', onWork ? 'hero' : 'header');
       h.classList.add('revealing');
@@ -27,9 +27,9 @@
   </script>
   <script>window.CW_NO_API = true;</script>
   <script>window.CW_REVIEW = true;</script>
-  <link rel="stylesheet" href="review/review.css?v=bdb65c433f">
-  <script type="module" src="review/review.js?v=bdb65c433f"></script>
-  <script type="module" src="js/site.js?v=bdb65c433f"></script>
+  <link rel="stylesheet" href="review/review.css?v=a32874f3b6">
+  <script type="module" src="review/review.js?v=a32874f3b6"></script>
+  <script type="module" src="js/site.js?v=a32874f3b6"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -40,6 +40,7 @@
       <a href="/" data-link data-nav="work">Home</a>
       <a href="/gallery" data-link data-nav="studio">Gallery</a>
       <a href="/contact" data-link data-nav="commissions">Contact</a>
+      <a href="/about" data-link data-nav="about">About</a>
       <span class="nav-ind" aria-hidden="true"></span>
     </nav>
   </header>
@@ -52,12 +53,35 @@
         <span class="hero-wash" aria-hidden="true"></span>
         <div class="hero-mark" data-mark="hero"></div>
         <h1 class="sr-only" data-bind="name"></h1>
-        <button class="scroll-cue tap reveal-after" type="button" data-scroll-cue aria-label="Scroll to the work">
+        <button class="scroll-cue tap reveal-after" type="button" data-scroll-cue aria-label="Scroll down">
           <svg viewBox="0 0 24 13" aria-hidden="true"><path d="M12 13 0 0h24z"/></svg>
         </button>
       </div>
-      <p class="intro" data-intro data-rise></p>
-      <ol class="sequence" data-sequence></ol>
+      <!-- Casey's drawing: mission line, a set of photos, philosophy, buttons. From the meeting: what's possible,
+           and a full-width photo band. Hard cuts between segments, no fades. -->
+      <div class="home-segs">
+        <section class="seg seg-mission" data-intro aria-label="What we do">
+          <div class="mission" data-mission data-rise></div>
+        </section>
+        <div class="wrap photo-set" data-photo-set></div>
+        <section class="seg seg-philosophy">
+          <div class="wrap seg-row">
+            <h2 class="seg-label">Philosophy</h2>
+            <div class="seg-body" data-philosophy data-rise></div>
+          </div>
+        </section>
+        <figure class="seg-photo" data-seg-photo="0"></figure>
+        <section class="seg seg-capabilities">
+          <div class="wrap">
+            <h2 class="seg-label">What’s possible</h2>
+            <ul class="caps" data-capabilities></ul>
+            <div class="seg-actions" data-rise>
+              <a class="btn-primary tap" href="/contact" data-link>Inquire</a>
+              <a class="btn-secondary tap" href="/gallery" data-link>See my work</a>
+            </div>
+          </div>
+        </section>
+      </div>
     </section>
 
     <!-- STUDIO -->
@@ -70,33 +94,70 @@
 
     <!-- COMMISSIONS -->
     <section class="page" data-page="commissions" hidden>
+      <div class="wrap contact-hero">
+        <h1 class="contact-statement" data-contact-statement></h1>
+        <p class="contact-sub" data-contact-sub></p>
+        <p class="contact-note" data-contact-note></p>
+      </div>
+
       <div class="wrap commission-grid">
         <div class="commission-photo" data-aside-photo></div>
 
         <div class="form-col">
-          <h1 class="sr-only">Contact</h1>
           <form class="inquiry" data-form novalidate>
-            <div class="field">
-              <label class="idea-label" for="f-desc">Your idea</label>
-              <textarea id="f-desc" class="idea-input" name="description" rows="7" required placeholder="Start here…"></textarea>
-              <p class="err" data-err="description" hidden>Add a few words about the idea.</p>
-            </div>
-
             <div class="field two">
               <div>
-                <label class="field-label" for="f-name">Name</label>
-                <input id="f-name" name="name" autocomplete="name" required>
+                <div class="box">
+                  <label class="field-label" for="f-name">Name</label>
+                  <input id="f-name" name="name" autocomplete="name" required>
+                </div>
                 <p class="err" data-err="name" hidden>Add your name.</p>
               </div>
               <div>
-                <label class="field-label" for="f-email">Email</label>
-                <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>
+                <div class="box">
+                  <label class="field-label" for="f-email">Email</label>
+                  <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>
+                </div>
                 <p class="err" data-err="email" hidden>Add a valid email.</p>
               </div>
             </div>
 
+            <div class="field two">
+              <div>
+                <div class="box">
+                  <label class="field-label" for="f-phone">Phone (optional)</label>
+                  <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel">
+                </div>
+              </div>
+              <div>
+                <div class="box box-select">
+                  <label class="field-label" for="f-method">Preferred contact method</label>
+                  <select id="f-method" name="method">
+                    <option>Email</option>
+                    <option>Phone call</option>
+                    <option>Text</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="box">
+                <label class="field-label" for="f-loc">Location</label>
+                <input id="f-loc" name="location" autocomplete="address-level2" placeholder="City or neighborhood">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="box">
+                <label class="field-label" for="f-desc">Project description</label>
+                <textarea id="f-desc" name="description" rows="6" required placeholder="Start here…"></textarea>
+              </div>
+              <p class="err" data-err="description" hidden>Add a few words about the idea.</p>
+            </div>
+
             <div class="send-bar">
-              <button class="btn-primary btn-send tap" type="submit" data-send>Send</button>
+              <button class="btn-primary btn-send tap" type="submit" data-send>Send inquiry</button>
               <p class="err" data-err="send" hidden></p>
             </div>
           </form>
@@ -105,24 +166,39 @@
             <h2 class="display-line">Sent.</h2>
             <p data-confirm-text></p>
           </div>
-
-          <div class="next-note">
-            <h2 class="label muted">Next</h2>
-            <ol class="next-list">
-              <li><span class="num">1</span><span data-rid="reply-time">Reply within a week</span></li>
-              <li><span class="num">2</span><span>Call or visit</span></li>
-              <li><span class="num">3</span><span>Drawings and quote</span></li>
-            </ol>
-          </div>
         </div>
+      </div>
+
+      <div class="wrap get-in-touch">
+        <h2 class="display-line">Or reach out directly</h2>
+        <p class="git-lines">
+          <a class="text-link" data-contact-email></a>
+          <a class="text-link" data-contact-phone hidden></a>
+        </p>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="page" data-page="about" hidden>
+      <div class="wrap about-grid">
+        <div class="about-text">
+          <h1 class="sr-only">About</h1>
+          <div data-about-text></div>
+        </div>
+        <div class="about-photos" data-about-photos></div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
+    <!-- Bookends: the CW mark on the left, the wordmark on the right, how to reach Casey between them. -->
     <div class="wrap footer-row">
-      <span class="foot-item"><a class="tap" data-footer-email data-rid="email"></a></span>
-      <span class="foot-item"><span data-bind="location" data-rid="location"></span></span>
+      <a class="foot-mark tap" href="/" data-link aria-label="Chandler Woodworking, home"><span data-mark="footer"></span></a>
+      <div class="foot-contact">
+        <a class="tap" data-footer-email data-rid="email"></a>
+        <span data-bind="location" data-rid="location"></span>
+      </div>
+      <span class="foot-word" data-bind="name" aria-hidden="true"></span>
     </div>
   </footer>
 
@@ -130,6 +206,7 @@
     <a href="/" data-link data-nav="work" class="tap">Home</a>
     <a href="/gallery" data-link data-nav="studio" class="tap">Gallery</a>
     <a href="/contact" data-link data-nav="commissions" class="tap">Contact</a>
+    <a href="/about" data-link data-nav="about" class="tap">About</a>
   </nav>
 
   <div class="piece-layer" data-piece-layer hidden></div>

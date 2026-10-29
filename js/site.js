@@ -1,5 +1,5 @@
-import { site, home, pieces, commissions } from './content.js?v=bdb65c433f';
-import { MARK_PATH } from './mark-path.js?v=bdb65c433f';
+import { site, home, pieces, commissions, about } from './content.js?v=a32874f3b6';
+import { MARK_PATH } from './mark-path.js?v=a32874f3b6';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
@@ -38,7 +38,7 @@ function markHTML() {
 }
 
 function renderMarks() {
-  $$('[data-mark="header"]').forEach((el) => (el.innerHTML = markHTML()));
+  $$('[data-mark="header"], [data-mark="footer"]').forEach((el) => (el.innerHTML = markHTML()));
   $$('[data-mark="hero"]').forEach((el) => (el.innerHTML = `${markHTML()}<span class="wordmark reveal-after" aria-hidden="true">${esc(site.name)}</span>`));
   // Re-fit whenever a typeset mark, the wordmark or the hero box changes size or first appears (the header
   // mark is display:none on Work, the hero everywhere else).
@@ -163,7 +163,8 @@ function mediaHTML(ph, ratio, dims) {
     : `<img src="${link(ph.src)}" alt="${esc(ph.alt || '')}" loading="lazy" decoding="async" style="object-position:${ph.pos || '50% 50%'};${
         ph.zoom ? `transform:scale(${ph.zoom});transform-origin:${ph.pos || '50% 50%'}` : ''
       }">`;
-  return `<div class="media reg-box">${RX}<div class="frame ${ratio}${ph.missing ? ' empty' : ''}" data-rid="${ph.rid}">${img}</div>${
+  const note = ph.missing && ph.note ? `<span class="frame-note">${esc(ph.note)}</span>` : '';
+  return `<div class="media reg-box">${RX}<div class="frame ${ratio}${ph.missing ? ' empty' : ''}" data-rid="${ph.rid}">${img}${note}</div>${
     dims ? dimsHTML(dims) : ''
   }</div>`;
 }
@@ -196,85 +197,82 @@ function renderStatic() {
   const heroPhoto = $('[data-hero-photo]');
   heroPhoto.dataset.rid = hp.rid;
   heroPhoto.innerHTML = `<img src="${link(hp.src)}" alt="${esc(hp.alt)}" fetchpriority="high" decoding="async" style="object-position:${hp.pos || '50% 50%'}">`;
-  $('[data-intro]').textContent = home.line;
   $('[data-scroll-cue]').addEventListener('click', () =>
     $('[data-intro]').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' })
   );
 
-  // Work sequence
-  $('[data-sequence]').innerHTML = pieces
-    .map((p, i) => {
-      const [hero, ...rest] = visiblePhotos(p.photos).filter((ph) => !ph.missing);
-      const details = rest.slice(0, 2);
-      return `<li class="piece" id="${p.slug}" data-rise>
-        <a class="piece-link" href="${link(`/work/${p.slug}`)}" data-link data-piece="${p.slug}" aria-label="${esc(p.title)}, No. ${p.no}. Open details">
-          ${mediaHTML(hero, isMobile() ? 'r-45' : 'r-32', p.dims)}
-          ${details.length === 2 ? `<div class="details">${details.map((ph) => mediaHTML(ph, 'r-45')).join('')}</div>` : ''}
-          <div class="caption" data-rid="p${i + 1}-meta">
-            <span class="num">${p.no}</span>
-            <span class="title"><span class="title-u">${esc(p.title)}</span></span>
-            <span class="meta-row">
-              <span class="meta">${p.year}</span>
-              <span class="meta">${esc(p.wood)}</span>
-              <span class="meta">${sizeText(p.dims)}</span>
-            </span>
-          </div>
-        </a>
-      </li>`;
-    })
+  // Home, in the order of Casey's drawing. Placeholder copy is flagged in review builds (review.css).
+  const flag = (on) => (on ? ' data-draft' : '');
+  $('[data-mission]').innerHTML = `<h2 class="intro">${esc(home.mission.title)}</h2>
+    <p class="intro-line">${esc(home.mission.line)}</p>`;
+  $('[data-photo-set]').innerHTML = home.photoSet.map((ph) => mediaHTML(ph, 'r-32')).join('');
+  $('[data-philosophy]').innerHTML = home.philosophy.map((t) => `<p${flag(home.philosophyDraft)}>${esc(t)}</p>`).join('');
+  // Photo bands between segments: full bleed, hard edges, decorative (the segments carry the words).
+  $$('[data-seg-photo]').forEach((fig) => {
+    const ph = home.breaks[fig.dataset.segPhoto];
+    if (!ph) return fig.remove();
+    fig.innerHTML = `<div class="frame" data-rid="${ph.rid}"><img src="${link(ph.src)}" alt="${esc(ph.alt)}" loading="lazy" decoding="async" style="object-position:${ph.pos};${
+      ph.zoom ? `transform:scale(${ph.zoom});transform-origin:${ph.pos}` : ''
+    }"></div>`;
+  });
+  $('[data-capabilities]').innerHTML = home.capabilities
+    .map(
+      (c, i) => `<li class="cap" data-rise>
+        <span class="num">0${i + 1}</span>
+        <h3 class="cap-name"${flag(home.capabilitiesDraft)}>${esc(c.name)}</h3>
+        <p class="cap-line"${flag(home.capabilitiesDraft)}>${esc(c.line)}</p>
+      </li>`
+    )
     .join('');
 
+  $('[data-contact-statement]').textContent = commissions.statement;
+  $('[data-contact-sub]').textContent = commissions.sub;
+  $('[data-contact-note]').textContent = commissions.note;
   $('[data-aside-photo]').innerHTML = mediaHTML(commissions.photo, 'r-45');
+  const cEmail = $('[data-contact-email]');
+  cEmail.href = `mailto:${site.email}`;
+  cEmail.textContent = site.email;
+  if (site.phone) {
+    const cPhone = $('[data-contact-phone]');
+    cPhone.href = `tel:${site.phone.replace(/[^\d+]/g, '')}`;
+    cPhone.textContent = site.phone;
+    cPhone.hidden = false;
+  }
 
-  // Gallery: every piece as a tile, opening the same piece view as the sequence on Home.
+  // About: Casey's story on the left, two photos on the right.
+  $('[data-about-text]').innerHTML = about.text.map((t) => `<p${flag(about.draft)}>${esc(t)}</p>`).join('');
+  $('[data-about-photos]').innerHTML = about.photos.map((ph) => mediaHTML(ph, 'r-45')).join('');
+
+  // Gallery: every piece as a tile, each opening its piece view (/work/<slug>) over the grid.
   $('[data-works]').innerHTML = pieces
     .map((p) => {
       const [cover] = visiblePhotos(p.photos).filter((ph) => !ph.missing);
       return `<li data-rise>
         <a class="work-tile" href="${link(`/work/${p.slug}`)}" data-link data-piece="${p.slug}" aria-label="${esc(p.title)}, ${p.year}. Open details">
-          ${mediaHTML(cover, 'r-45')}
-          <span class="work-title"><span class="title-u">${esc(p.title)}</span></span>
-          <span class="work-meta">${p.year} · ${esc(p.wood)}</span>
+          ${mediaHTML(cover, 'r-32')}
+          <span class="work-title"><span class="title-u">${esc(p.title)}</span><span class="work-wood">, in ${esc(p.wood)}</span></span>
         </a>
       </li>`;
     })
     .join('');
 
   wireImages();
-  wireHoverDims(document);
   wireReveals();
 }
 
-function wireHoverDims(root) {
-  $$('.piece-link', root).forEach((a) => {
-    const on = (e) => { if (!e.pointerType || e.pointerType === 'mouse') a.classList.add('is-dim'); };
-    const off = () => a.classList.remove('is-dim');
-    a.addEventListener('pointerenter', on);
-    a.addEventListener('pointerleave', off);
-    a.addEventListener('focus', () => a.matches(':focus-visible') && a.classList.add('is-dim'));
-    a.addEventListener('blur', off);
-  });
-}
-
-// Sequence crops switch between 3:2 (desktop) and 4:5 (iPhone) at the breakpoint.
+// An open piece is a phone sheet or a desktop overlay; crossing the breakpoint closes it back to the grid.
 mqMobile.addEventListener('change', () => {
-  $$('.piece-link > .media > .frame').forEach((f) => {
-    f.classList.toggle('r-32', !isMobile());
-    f.classList.toggle('r-45', isMobile());
+  if (!openSlug) return;
+  const slug = openSlug;
+  closePiece({ animate: false }).then(() => {
+    history.replaceState({}, '', link('/gallery'));
+    pieceMedia(slug)?.scrollIntoView({ block: 'center' }); // re-anchor on the tile
   });
-  if (openSlug) {
-    const slug = openSlug;
-    closePiece({ animate: false }).then(() => {
-      history.replaceState({}, '', link('/'));
-      pieceMedia(slug)?.scrollIntoView({ block: 'center' }); // the crops just changed height; re-anchor on the piece
-    });
-  }
 });
 
 /* ---------------- Scroll reveals ---------------- */
 
-// The page settles in as you go down: the intro line and each piece fade up once, and a piece's dimension
-// lines draw in when most of its photo is on screen (on desktop; phones hide them). Nothing moves on the hero.
+// The page settles in as you go down: the Home segments and the Gallery tiles fade up once. Nothing moves on the hero.
 const revealIO = new IntersectionObserver((entries) => {
   entries.forEach((e) => {
     if (!e.isIntersecting) return;
@@ -282,16 +280,8 @@ const revealIO = new IntersectionObserver((entries) => {
     revealIO.unobserve(e.target);
   });
 }, { rootMargin: '0px 0px -12% 0px' });
-const measureIO = new IntersectionObserver((entries) => {
-  entries.forEach((e) => {
-    if (!e.isIntersecting) return;
-    e.target.closest('.piece-link')?.classList.add('measured');
-    measureIO.unobserve(e.target);
-  });
-}, { threshold: .6 });
 function wireReveals() {
   $$('[data-rise]').forEach((el) => (reduced() ? el.classList.add('in') : revealIO.observe(el)));
-  $$('.piece-link > .media').forEach((m) => (reduced() ? m.parentElement.classList.add('measured') : measureIO.observe(m)));
 }
 
 /* ---------------- Nav ---------------- */
@@ -365,7 +355,7 @@ mqMobile.addEventListener('change', updateFloat);
 
 /* ---------------- Routing ---------------- */
 
-const TITLES = { work: site.name, studio: `Gallery · ${site.name}`, commissions: `Contact · ${site.name}` };
+const TITLES = { work: site.name, studio: `Gallery · ${site.name}`, commissions: `Contact · ${site.name}`, about: `About · ${site.name}` };
 let currentPage = null;
 let openSlug = null;
 
@@ -373,8 +363,9 @@ function parse(pathname) {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/gallery') return { page: 'studio' };
   if (path === '/contact') return { page: 'commissions' };
+  if (path === '/about') return { page: 'about' };
   const m = path.match(/^\/work\/([^/]+)$/);
-  if (m && pieces.some((p) => p.slug === m[1])) return { page: 'work', piece: m[1] };
+  if (m && pieces.some((p) => p.slug === m[1])) return { page: 'studio', piece: m[1] };
   return { page: 'work' };
 }
 
@@ -420,7 +411,7 @@ function apply(animate, y) {
 
 async function applyNow(animate, y) {
   const r = parse(location.pathname.slice(BASE.length) || '/');
-  if (openSlug && r.piece !== openSlug) await closePiece({ animate: animate && r.page === 'work' });
+  if (openSlug && r.piece !== openSlug) await closePiece({ animate: animate && r.page === 'studio' });
   if (r.page !== currentPage) await switchPage(r.page, animate, y || 0);
   if (r.page === 'commissions') prefillFromQuery();
   if (r.piece && r.piece !== openSlug) {
@@ -494,7 +485,7 @@ function pieceViewHTML(p, idx) {
 }
 
 function lock(on) { document.body.classList.toggle('locked', on); }
-const pieceMedia = (slug) => $(`#${slug} .piece-link > .media`);
+const pieceMedia = (slug) => $(`.work-tile[data-piece="${slug}"] > .media`);
 
 async function openPiece(slug, { animate }) {
   const idx = pieces.findIndex((p) => p.slug === slug);
@@ -581,7 +572,7 @@ async function closePiece({ animate }) {
 function requestClose() {
   if (!openSlug) return;
   if (history.state && history.state.fromSeq) history.back();
-  else navigate('/', { replace: true });
+  else navigate('/gallery', { replace: true });
 }
 
 function wirePieceView(p) {
@@ -718,10 +709,10 @@ formEl.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = formEl.elements;
   const bad = [];
-  if (!f.description.value.trim()) bad.push('description');
   if (!f.name.value.trim()) bad.push('name');
   if (!/^\S+@\S+\.\S+$/.test(f.email.value.trim())) bad.push('email');
-  ['description', 'name', 'email'].forEach((n) => showErr(n, bad.includes(n)));
+  if (!f.description.value.trim()) bad.push('description');
+  ['name', 'email', 'description'].forEach((n) => showErr(n, bad.includes(n)));
   showErr('send', false);
   if (bad.length) {
     f[bad[0]].focus();
@@ -801,7 +792,7 @@ window.CW = {
   get page() { return currentPage; },
   get openPiece() { return openSlug; },
   go: (path) => navigate(path),
-  closePiece: () => (openSlug ? navigate('/', { replace: !(history.state && history.state.fromSeq) }) : Promise.resolve()),
+  closePiece: () => (openSlug ? navigate('/gallery', { replace: !(history.state && history.state.fromSeq) }) : Promise.resolve()),
 };
 
 renderStatic();
