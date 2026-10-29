@@ -1,5 +1,5 @@
-import { site, home, pieces, commissions, about } from './content.js?v=39e06b7040';
-import { MARK_PATH } from './mark-path.js?v=39e06b7040';
+import { site, home, pieces, commissions, about } from './content.js?v=7fed7b8d83';
+import { MARK_PATH } from './mark-path.js?v=7fed7b8d83';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
@@ -379,16 +379,37 @@ function showPage(page) {
   fitMarks(); // the hero may have been hidden while the face or size changed; fit before it paints
 }
 
+// Make the new page's first screen final before the cross-fade captures it, so nothing moves a second time:
+// the floating nav docks at once for the new scroll position, and anything on screen that would fade up on
+// scroll is shown in place without its rise (the rise is for content you scroll to, not for arriving).
+function settlePage() {
+  updateFloat();
+  $$(`.page[data-page="${currentPage}"] [data-rise]:not(.in)`).forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.top >= innerHeight || r.bottom <= 0) return;
+    el.style.transition = 'none';
+    el.classList.add('in');
+    requestAnimationFrame(() => requestAnimationFrame(() => (el.style.transition = '')));
+  });
+}
+
 // `y` is where to land: 0 for a new visit, the saved position when going back or forward.
 async function switchPage(page, animate, y = 0) {
   if (!animate || reduced()) {
     showPage(page);
     scrollTo(0, y);
+    settlePage();
     return;
   }
   if (canVT()) {
-    const t = document.startViewTransition(() => { showPage(page); scrollTo(0, y); });
+    // Have the new page's photos decoded before the fade, so they arrive with the page instead of fading in after.
+    const imgs = $$(`.page[data-page="${page}"] img`).slice(0, 8);
+    imgs.forEach((img) => (img.loading = 'eager'));
+    await Promise.race([Promise.all(imgs.map((img) => img.decode().catch(() => {}))), wait(180)]);
+    html.classList.add('vt-page');
+    const t = document.startViewTransition(() => { showPage(page); scrollTo(0, y); settlePage(); });
     await settled(t);
+    html.classList.remove('vt-page');
   } else {
     const main = $('#main');
     main.style.transition = 'opacity 100ms var(--ease)';
@@ -396,6 +417,7 @@ async function switchPage(page, animate, y = 0) {
     await wait(100);
     showPage(page);
     scrollTo(0, y);
+    settlePage();
     main.style.opacity = '1';
     await wait(100);
     main.style.transition = main.style.opacity = '';

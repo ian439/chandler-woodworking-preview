@@ -413,7 +413,19 @@ html[data-page="work"] .site-footer { margin-top: 0; }
 }
 .btn-secondary:hover { border-color: var(--walnut); }
 
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; animation-timing-function: var(--ease); }
+/* Page switches: the page body cross-fades, while the nav, the header mark and the phone tab bar are their own
+   layers, so they glide to their new place (the nav sits lower once the CW mark is above it) instead of showing
+   up twice mid-fade. */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 240ms; animation-timing-function: var(--ease); }
+html.vt-page .nav-desktop { view-transition-name: site-nav; } /* page switches only: over an opening piece they would show through */
+html.vt-page .header-mark { view-transition-name: site-mark; }
+html.vt-page .tabbar { view-transition-name: tabbar; }
+::view-transition-group(site-nav), ::view-transition-group(site-mark), ::view-transition-group(tabbar) {
+  animation-duration: 300ms; animation-timing-function: var(--ease);
+}
+::view-transition-old(site-nav), ::view-transition-new(site-nav), ::view-transition-old(site-mark), ::view-transition-new(site-mark) {
+  animation-duration: 240ms; animation-timing-function: var(--ease);
+}
 html.vt-piece::view-transition-old(root), html.vt-piece::view-transition-new(root) { animation-duration: var(--t-state); }
 ::view-transition-group(piece-hero) { animation-duration: var(--t-open); animation-timing-function: var(--ease); }
 ::view-transition-old(piece-hero), ::view-transition-new(piece-hero) { animation-duration: var(--t-open); animation-timing-function: var(--ease); height: 100%; object-fit: cover; }
