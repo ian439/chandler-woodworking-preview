@@ -229,9 +229,16 @@ html.revealing .tabbar { opacity: 0; }
 /* Wash: a shade at the top for the nav, a soft vignette behind the lockup, and a long eased fade into the
    page colour (rgb of --birch — keep in sync) over the bottom half, so the photo melts into the page with no edge.
    It overhangs the hero by a few pixels (solid page colour) so no sub-pixel seam can show. */
+/* Top fade: starts at exactly the page colour, which is also the theme-color Safari paints behind the status bar,
+   so the photo melts up into the browser chrome instead of meeting it at a hard line. Eased stops, like the bottom. */
 .hero-wash {
   position: absolute; inset: 0 0 -3px; pointer-events: none;
+  --top-fade: 22%;
   background:
+    linear-gradient(180deg,
+      rgb(30, 26, 23) 0%, rgba(30, 26, 23, .93) calc(var(--top-fade) * .1), rgba(30, 26, 23, .8) calc(var(--top-fade) * .22),
+      rgba(30, 26, 23, .62) calc(var(--top-fade) * .36), rgba(30, 26, 23, .42) calc(var(--top-fade) * .52),
+      rgba(30, 26, 23, .24) calc(var(--top-fade) * .7), rgba(30, 26, 23, .1) calc(var(--top-fade) * .86), rgba(30, 26, 23, 0) var(--top-fade)),
     linear-gradient(180deg,
       rgba(30, 26, 23, 0) 45%, rgba(30, 26, 23, .03) 51%, rgba(30, 26, 23, .09) 57%, rgba(30, 26, 23, .18) 63%,
       rgba(30, 26, 23, .3) 69%, rgba(30, 26, 23, .45) 75%, rgba(30, 26, 23, .61) 81%, rgba(30, 26, 23, .76) 86%,
@@ -568,6 +575,7 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 
   .seg-row { grid-template-columns: 1fr; row-gap: 16px; }
   .seg-photo .frame { height: auto; aspect-ratio: 4 / 5; }
+  .hero-wash { --top-fade: 28%; }
   .caps { grid-template-columns: 1fr; gap: 24px; margin-top: 24px; }
   .seg-actions { margin-top: 48px; }
   .seg-actions > a { flex: 1 1 100%; }
