@@ -520,14 +520,12 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 
 /* ---------- Footer ---------- */
 .site-footer { border-top: 1px solid var(--sawdust); margin-top: var(--section); padding: 48px 0 56px; }
-.footer-row {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 48px;
-  color: var(--walnut);
-}
-.foot-mark { justify-self: start; padding: 4px; margin-left: -4px; } /* padding is tap room; the ink sits on the gutter */
+/* Stacked and centred at every width: mark, then the email and town, then the credit. */
+.footer-row { display: grid; grid-template-columns: 1fr; justify-items: center; row-gap: 16px; color: var(--walnut); }
+.foot-mark { padding: 4px; } /* padding is tap room */
 .foot-mark .mark { width: 44px; }
 .foot-mark .mark.is-type { font-size: calc(26px * var(--display-scale)); }
-.foot-contact { display: flex; align-items: baseline; justify-content: center; gap: 8px 28px; flex-wrap: wrap; text-align: center; }
+.foot-contact { display: flex; align-items: baseline; justify-content: center; gap: 8px 28px; flex-wrap: wrap; text-align: center; margin-top: 12px; }
 /* The email is the footer's one call to action: set in the heading face, with an oak underline. */
 .foot-contact a {
   font-family: var(--display); font-weight: var(--display-weight); font-style: var(--display-style);
@@ -573,13 +571,6 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
 /* ---------- Narrow desktop / tablet ---------- */
 @media (min-width: 768px) and (max-width: 1023px) {
   .commission-grid { gap: 40px; }
-}
-/* Below full desktop width, stack like the phone footer. */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .footer-row { grid-template-columns: 1fr; justify-items: center; row-gap: 16px; }
-  .foot-mark { justify-self: center; }
-  .foot-mark { margin: 0; }
-  .foot-contact { margin-top: 12px; }
 }
 
 /* ---------- iPhone ---------- */
@@ -636,11 +627,8 @@ textarea:focus-visible { box-shadow: inset 0 0 0 1px var(--steel); }
   .send-bar .btn-primary { width: 100%; }
 
   .site-footer { padding: 40px 0 40px; }
-  /* Stacked and centred: mark, then the email and town. */
-  .footer-row { grid-template-columns: 1fr; justify-items: center; row-gap: 16px; }
-  .foot-mark { justify-self: center; }
-  .foot-mark { margin: 0; }
-  .foot-contact { margin-top: 12px; flex-direction: column; align-items: center; }
+  /* Email above town on phones. */
+  .foot-contact { flex-direction: column; align-items: center; }
 
   /* Piece view: bottom sheet */
   .pv-backdrop { background: rgba(0, 0, 0, .6); opacity: 0; transition: opacity var(--t-open) var(--ease); }
