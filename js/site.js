@@ -1,5 +1,5 @@
-import { site, home, pieces, commissions, about } from './content.js?v=b1e7b615cb';
-import { MARK_PATH } from './mark-path.js?v=b1e7b615cb';
+import { site, home, pieces, commissions, about } from './content.js?v=9ffba670ba';
+import { MARK_PATH } from './mark-path.js?v=9ffba670ba';
 
 // True only in REVIEW_MODE builds (the flag is injected by build.mjs with the review module).
 const REVIEW = !!window.CW_REVIEW;
