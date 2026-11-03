@@ -1,4 +1,4 @@
 // Review layer: the font switcher Casey uses to try heading, logo and body fonts on the live draft.
 // Only copied into the build when REVIEW_MODE is on (see build.mjs).
 
-import './fonts.js?v=9ffba670ba';
+import './fonts.js?v=86ed61bca6';

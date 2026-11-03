@@ -4,6 +4,19 @@
   <meta charset="utf-8">
   <base href="/chandler-woodworking-preview/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    // Google Analytics (GA4 property "Chandler Woodworking site"). Skipped on localhost so dev visits don't count.
+    if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      var ga = document.createElement('script');
+      ga.async = true;
+      ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-1J2G3B15F3';
+      document.head.appendChild(ga);
+    }
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-1J2G3B15F3');
+  </script>
   <title>Chandler Woodworking</title>
   <meta name="description" content="Furniture made to commission in Santa Cruz, California.">
   <meta name="theme-color" content="#1E1A17">
@@ -12,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..500&family=Crimson+Pro:wght@200..700&display=swap">
-  <link rel="stylesheet" href="css/site.css?v=9ffba670ba">
+  <link rel="stylesheet" href="css/site.css?v=86ed61bca6">
   <script>
     // Hide everything but the logo until the first-load reveal runs (failsafe after 3s).
     var h = document.documentElement, base = new URL(document.baseURI).pathname.replace(/\/$/, '');
@@ -27,9 +40,9 @@
   </script>
   <script>window.CW_NO_API = true;</script>
   <script>window.CW_REVIEW = true;</script>
-  <link rel="stylesheet" href="review/review.css?v=9ffba670ba">
-  <script type="module" src="review/review.js?v=9ffba670ba"></script>
-  <script type="module" src="js/site.js?v=9ffba670ba"></script>
+  <link rel="stylesheet" href="review/review.css?v=86ed61bca6">
+  <script type="module" src="review/review.js?v=86ed61bca6"></script>
+  <script type="module" src="js/site.js?v=86ed61bca6"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
